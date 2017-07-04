@@ -1,18 +1,17 @@
 package pack;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
+import javax.swing.JApplet;
 import javax.swing.JFrame;
 
 import button.MyButton;
 
-public class Main {
+public class Main_applet extends JApplet {
 
-	
+	private static final long serialVersionUID = 1L;
 	private static JFrame jframe;
 	private static MyButton mybutton;
-	public static void main(String[] args) {
+	public void init() {
 		jframe = new JFrame("Laboration 2");
 		mybutton = new MyButton();
 		jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

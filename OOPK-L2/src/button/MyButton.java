@@ -1,4 +1,4 @@
-package pack;
+package button;
 
 import javax.swing.*;
 import java.awt.*;
