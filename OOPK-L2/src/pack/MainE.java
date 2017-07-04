@@ -7,14 +7,12 @@ import javax.swing.JFrame;
 
 import button.MyButton;
 
-public class Main {
+public class MainE {
 
-	
-	private static JFrame jframe;
 	private static MyButton mybutton;
 	public static void main(String[] args) {
-		jframe = new JFrame("Laboration 2");
-		mybutton = new MyButton();
+		JFrame jframe = new JFrame("Laboration 2");
+		MyButton mybutton = new MyButton();
 		jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		
