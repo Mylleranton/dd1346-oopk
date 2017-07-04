@@ -1,4 +1,4 @@
-package pack;
+package pack.e;
 
 
 import javax.swing.JApplet;
