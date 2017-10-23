@@ -26,9 +26,18 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 public class DirTreeMainC extends JFrame implements ActionListener {
-
-	private static final long serialVersionUID = 592140375690835306L;
-
+	
+	private final JCheckBox box;
+	private final JTree tree;
+	private final DefaultMutableTreeNode root;
+	private final DefaultTreeModel treeModel;
+	private final JPanel controls;
+	private static final String closeString = " Close ";
+	private static final String showString = " Show Details ";
+	private static final String fileName = "/src/pack/Liv.xml";
+	private static Scanner scanner;
+	private static Scanner checkScanner;
+	
 	public DirTreeMainC() {
 		try {
 			// Kolla så att XML-koden är okej
@@ -61,28 +70,16 @@ public class DirTreeMainC extends JFrame implements ActionListener {
 		c.add(tree, BorderLayout.CENTER);
 		setVisible(true); // ** display the framed window
 	}
-	// Copied from DirTree
-	public void actionPerformed(ActionEvent e) {
-		final String cmd = e.getActionCommand();
-		if (cmd.equals(closeString)) {
-			dispose();
+
+	public static void main(String[] args) {
+		try {
+			scanner = new Scanner(new File(System.getProperty("user.dir") + fileName));
+			checkScanner = new Scanner(new File(System.getProperty("user.dir") + fileName));
+		} catch (final FileNotFoundException e) {
+			e.printStackTrace();
 		}
-	}
-	// Copied from DirTree
-	private void init() {
-		tree.setFont(new Font("Dialog", Font.BOLD, 12));
-		controls.add(box);
-		addButton(closeString);
-		controls.setBackground(Color.lightGray);
-		controls.setLayout(new FlowLayout());
-		setSize(400, 400);
-	}
-	// Copied from DirTree
-	private void addButton(String n) {
-		final JButton b = new JButton(n);
-		b.setFont(new Font("Dialog", Font.BOLD, 12));
-		b.addActionListener(this);
-		controls.add(b);
+
+		new DirTreeMainC();
 	}
 
 	// Shows details about the bio
@@ -145,20 +142,17 @@ public class DirTreeMainC extends JFrame implements ActionListener {
 			while (scanner.hasNextLine()) {
 				line = scanner.nextLine();
 
-				// If th endtag matches the opentag, return
+				// If the endtag matches the opentag, return
 				if (line.startsWith("</".concat(openTag))) {
-					System.out.println("Avslutar DFS, stötte på: " + "</".concat(openTag));
+					//System.out.println("Avslutar DFS, stötte på: " + "</".concat(openTag));
 					return retNode;
 				}
 				// else, make the new tag a child
 				else if (line.startsWith("<") && !line.startsWith("</")) {
 					retNode.add(readNode(line));
 				}
-
 			}
-
 		}
-
 		return retNode;
 	}
 
@@ -202,7 +196,7 @@ public class DirTreeMainC extends JFrame implements ActionListener {
 			}
 		}
 		node.setText(text);
-		System.out.println("Gjort nod " + node.getUserObject());
+		//System.out.println("Gjort nod " + node.getUserObject());
 		return node;
 	}
 
@@ -253,25 +247,31 @@ public class DirTreeMainC extends JFrame implements ActionListener {
 
 	}
 
-	public static void main(String[] args) {
-		try {
-			scanner = new Scanner(new File(System.getProperty("user.dir") + fileName));
-			checkScanner = new Scanner(new File(System.getProperty("user.dir") + fileName));
-		} catch (final FileNotFoundException e) {
-			e.printStackTrace();
-		}
 
-		new DirTreeMainC();
+	
+	// Copied from DirTree
+	public void actionPerformed(ActionEvent e) {
+		final String cmd = e.getActionCommand();
+		if (cmd.equals(closeString)) {
+			dispose();
+		}
+	}
+	// Copied from DirTree
+	private void init() {
+		tree.setFont(new Font("Dialog", Font.BOLD, 12));
+		controls.add(box);
+		addButton(closeString);
+		controls.setBackground(Color.lightGray);
+		controls.setLayout(new FlowLayout());
+		setSize(400, 400);
+	}
+	// Copied from DirTree
+	private void addButton(String n) {
+		final JButton b = new JButton(n);
+		b.setFont(new Font("Dialog", Font.BOLD, 12));
+		b.addActionListener(this);
+		controls.add(b);
 	}
 
-	private final JCheckBox box;
-	private final JTree tree;
-	private final DefaultMutableTreeNode root;
-	private final DefaultTreeModel treeModel;
-	private final JPanel controls;
-	private static final String closeString = " Close ";
-	private static final String showString = " Show Details ";
-	private static final String fileName = "/src/pack/Liv.xml";
-	private static Scanner scanner;
-	private static Scanner checkScanner;
+
 }

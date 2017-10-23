@@ -3,8 +3,14 @@ package pack;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
-
-public class Main {
+/**
+ * 
+ * DirTreeE2 implements the XML scanner but does not print out a tree
+ * For that functionality, see DirTreeMainC
+ * @author anton
+ *
+ */
+public class DirTreeE2 {
 
 	private static final String fileName = "/src/pack/Liv.xml";
 	private static Scanner scanner;
@@ -15,10 +21,10 @@ public class Main {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		new Main();
+		new DirTreeE2();
 	}
 	
-	public Main(){
+	public DirTreeE2(){
 		readNode();
 	}
 	

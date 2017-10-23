@@ -15,10 +15,9 @@ public class DirTreeE1 extends JFrame implements ActionListener {
       Container c = getContentPane();
       //*** Build the tree and a mouse listener to handle clicks
       //root = new DefaultMutableTreeNode(katalog);
-      
-      
+      this.setTitle("E1 - Livsträdet");
       /*
-       * Ny root som heter LIV
+       * Ny root som heter Liv
        */
       root = new DefaultMutableTreeNode("Liv");
       
