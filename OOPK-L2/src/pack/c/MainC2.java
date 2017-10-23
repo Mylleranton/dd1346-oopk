@@ -11,6 +11,11 @@ import javax.swing.JPanel;
 
 import button.MyButton;
 
+/**
+ * 
+ * @author anton
+ *Ramprogram C2 där knapptryckning ändrar varje knapp utom den tryckta!
+ */
 public class MainC2 {
 	
 	private static int NUMBER_OF_BUTTONS;
@@ -26,6 +31,7 @@ public class MainC2 {
 		}
 		
 		JFrame jframe = new JFrame("Laboration 2 Del C");
+		// Layout styrs här, väljer flowlayout nu för enkelhet
 		JPanel jpanel = new JPanel(new FlowLayout());
 		jframe.add(jpanel);
 		jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

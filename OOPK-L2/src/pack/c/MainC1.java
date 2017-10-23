@@ -10,6 +10,12 @@ import javax.swing.JPanel;
 
 import button.MyButton;
 
+/**
+ * 
+ * @author anton
+ * Ramprogram för uppgift C1 där knapptryck ändrar bara den tryckta knappen
+ *
+ */
 public class MainC1 {
 	//Antal knappar begärda
 	private static int NUMBER_OF_BUTTONS;

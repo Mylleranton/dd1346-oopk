@@ -2,18 +2,17 @@ package pack.e;
 
 /**
  * Applet version av MainE.java, ingen kodskillnad.
- * 
+ * Körs i AppletViewer med playknappen ovan
  */
 import javax.swing.JApplet;
 import javax.swing.JFrame;
 
 import button.MyButton;
 
-public class Main_applet extends JApplet {
+public class MainE_Applet extends JApplet {
 
-	private static final long serialVersionUID = 1L;
-	private static JFrame jframe;
-	private static MyButton mybutton;
+	private JFrame jframe;
+	private MyButton mybutton;
 	public void init() {
 		jframe = new JFrame("Laboration 2");
 		mybutton = new MyButton();
