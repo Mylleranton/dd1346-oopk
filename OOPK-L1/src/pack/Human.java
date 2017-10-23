@@ -4,6 +4,7 @@ public class Human implements Comparable<Human> {
 	// Privata fält
 	private int age;
 	private String name;
+	// Array med slumpvisa namn för den constructorn
 	private static final String[] nameList = {"Anton","Hasse","Putte","Nils","Leffe","Olof","Margareta","Zlatan","Elina"};
 	
 	// Konstruktörer
@@ -11,7 +12,7 @@ public class Human implements Comparable<Human> {
 		this.age = ageIn;
 		this.name = nameIn;
 	}
-	// Slumpar namn och åler
+	// Slumpar namn och ålder, ålder får vara allt mellan 0-100
 	public Human(){
 		this((int) (Math.random()*100), nameList[(int) (nameList.length*Math.random())]);
 	}
@@ -30,7 +31,7 @@ public class Human implements Comparable<Human> {
 		this.name = name;
 	}
 	
-	// Snygg utdata
+	// Snygg utdata Namn: XXXX, ålder: XX
 	public String toString(){
 		return "Namn: " + name + ", ålder: " + age;
 	}

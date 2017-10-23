@@ -2,25 +2,27 @@ package pack;
 
 public class Fysiker extends Human {
 	
+	// Har utöver Humans parametrar ett startår 
 	private int year;
 	
 	// Konstruktör
-	public Fysiker(int inAge, String inName, int inYear) throws Exception {
+	public Fysiker(int inAge, String inName, int inYear) throws IllegalArgumentException {
 		super(inAge,inName);
 		// Se till så kraven på fysiker uppfylls, annars exception
 		if (inYear < 1932 || inYear > 2015 || inAge < 15){
 			throw new IllegalArgumentException("Fysiker måste vara äldre än 15 år och kan inte börjat innan 1932 eller efter 2015.");
 		}
-		
 		this.year = inYear;
 	}
 	// Slumpmässig konstruktör
-	public Fysiker() throws Exception {
+	public Fysiker(){
+		// Anropar den slumpmässiga konstruktören i Human
 		super();
+		
 		this.year = 1932 + (int) ((2015-1932)*Math.random());
 		// Se till så en fysiker alltid är över 15.
 		if (this.getAge() < 15) {
-			this.setAge((int) (100*Math.random()));
+			this.setAge(15 + (int) ((100-15)*Math.random()));
 		}
 		
 	}

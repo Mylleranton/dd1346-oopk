@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 public class Test {
 
-	// Main test funktion. Innehåller kod för Command Line.
+	// Main test funktion. Innehåller kod för Command Line input.
 	// För övriga test, anropa varje funktion för sig.
 	public static void main(String[] args) throws Exception{
 		/*
@@ -13,7 +13,7 @@ public class Test {
 		 */
 		int i = 0;
 		ArrayList<Human> mFHarray = new ArrayList<Human>(); 
-		// Så länge det finns argument
+		// Så länge det finns argument, läs in namn och ålder och ev. startår
 		while(i < args.length){
 			String mName = "";
 			int mYear = 0;
@@ -36,7 +36,9 @@ public class Test {
 				// Vi har plockat ut datan från fyra fält, hoppa fram 4.
 				i = i+4;
 				// Se till så årsformateringen är korrekt
-				mYear = mYear <= 32 ? mYear+2000 : mYear+1900;
+				// TODO: EV. fixa check om årtalet ges på formatet XX eller XXXX
+				mYear = (mYear <= 32) ? mYear+2000 : mYear+1900;
+				
 				// Lägg till i vår arraylist
 				mFHarray.add(new Fysiker(mAge,mName,mYear));
 				
@@ -55,7 +57,7 @@ public class Test {
 				mFHarray.add(new Human(mAge,mName));
 			} else {
 				// Om vi får kommandon som inte är -H/F hamnar vi här.
-				throw new IllegalArgumentException("Felaktigt format");
+				throw new IllegalArgumentException("Felaktigt format, använd -F eller -H");
 			}
 		}
 		// Skriv ut ArrayList:en
@@ -67,16 +69,28 @@ public class Test {
 		 * HÄR ANROPAS ÖVRIGA TESTFUNKTIONER
 		 */
 		
+		// printHTest();
+		//createHArray();
+		// createFArray();
+		//createFHArray();
+		//compH();
+		//compFH();
+		//createFHArrayAndSort();
+		
 	}
+	
 	// TEST E2
+	// Skapa Human och skriv ut med manuell formatering och toString()
 	private static void printHTest(){
 		Human a = new Human(23, "Hasse");
-		System.out.println(a);
-		System.out.println("Namn: " + a.getName() + ", ålder: " +  a.getAge());
+		System.out.println("toString(): " + a.toString());
+		System.out.println("Manuellt: " + "Namn: " + a.getName() + ", ålder: " +  a.getAge());
 		Human b = new Human();
-		System.out.println(b);
+		System.out.println("Print(objekt): " + b);
 	}
+	
 	// TEST E3
+	// Skapar 15 Humans och skriver ut deras attribut
 	private static void createHArray() {
 		Human[] arr = new Human[15];
 		for(int i = 0; i < 15; i++){
@@ -87,8 +101,10 @@ public class Test {
 			System.out.println(arr[j]);
 		}
 	}
+	
 	//TEST E4 del 1 (E4.4)
-	private static void createFArray() throws Exception{
+	// Skapar 15 random fysiker och printar attribut
+	private static void createFArray(){
 		Fysiker[] arr = new Fysiker[15];
 		for(int i = 0; i<15;i++){
 			arr[i] = new Fysiker();
@@ -98,7 +114,7 @@ public class Test {
 		}
 	}
 	// Test E4 del 2 (E4.5)
-	private static void createFHArray() throws Exception{
+	private static void createFHArray(){
 		Fysiker[] arrF = new Fysiker[5];
 		Human[] arrH = new Human[5];
 		for(int i = 0; i<5;i++){
@@ -112,22 +128,24 @@ public class Test {
 		}
 	}
 	// TEST E5.2
+	// Skapar två humans och jämför dem
 	private static void compH() {
 		Human a = new Human();
 		Human b = new Human();
 		
 		if (a.compareTo(b) > 0) {
-			System.out.println(a.getName() + " som är " + a.getAge() + " är äldre än " + b.getName() + " som är " + b.getAge());
+			System.out.println(a.getName() + " som är " + a.getAge() + ", är äldre än " + b.getName() + " som är " + b.getAge());
 		}
 		else if (a.compareTo(b) < 0 ){
-			System.out.println(a.getName() + " som är " + a.getAge() + " är yngre än " + b.getName() + " som är " + b.getAge());
+			System.out.println(a.getName() + " som är " + a.getAge() + ", är yngre än " + b.getName() + " som är " + b.getAge());
 		}
 		else {
-			System.out.println(a.getName() + " som är " + a.getAge() + " är lika gammal som " + b.getName() + " som är " + b.getAge());
+			System.out.println(a.getName() + " som är " + a.getAge() + ", är lika gammal som " + b.getName() + " som är " + b.getAge());
 		}
 	}
 	// TEST E5.4 del 1
-	private static void compFH() throws Exception{
+	// Jämför human med fysiker
+	private static void compFH() {
 		Fysiker a = new Fysiker();
 		Human b = new Human();
 		if (a.compareTo(b) > 0) {
@@ -141,7 +159,8 @@ public class Test {
 		}
 	}
 	// TEST E5.4 del 2
-	private static void createFHArrayAndSort() throws Exception{
+	// Skapa och jämför humans och fysiker
+	private static void createFHArrayAndSort(){
 		Human[] arr = new Human[10];
 		for(int i = 0; i<10;i = i+2){
 			arr[i] = new Human();
