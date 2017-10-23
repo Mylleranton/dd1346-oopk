@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -35,7 +36,7 @@ public class Controller extends JPanel implements ChangeListener, ActionListener
 	private double timeElapsed = 0;
 	
 	
-	private FileWriter fileWriter;
+	private BufferedWriter buffWriter;
 	private final String logFile;
 	private final DecimalFormat df = new DecimalFormat(".#####");
 	
@@ -47,9 +48,9 @@ public class Controller extends JPanel implements ChangeListener, ActionListener
 		timer = new Timer(1000-(int) (10*Math.floor(DELTA)), this);
 		timer.start();
 		
-		logFile = System.getProperty("user.dir") + "/src/pack/log.txt";
+		logFile = System.getProperty("user.dir") + "/src/pack/log.csv";
 		try {
-			fileWriter = new FileWriter(logFile, false);
+			buffWriter = new BufferedWriter(new FileWriter(logFile, false));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -57,7 +58,7 @@ public class Controller extends JPanel implements ChangeListener, ActionListener
 	
 	private void initGraphics() {
 		LSlider = new JSlider(JSlider.HORIZONTAL,
-				L_MIN, L_MAX,L_MIN);
+				L_MIN, L_MAX,L_MAX);
 		DeltaSlider = new JSlider(JSlider.HORIZONTAL,
 				DELTA_MIN, DELTA_MAX,DELTA_MAX);
 		
@@ -91,7 +92,8 @@ public class Controller extends JPanel implements ChangeListener, ActionListener
 		}
 		sb.append("\n");
 		try {
-			fileWriter.write(sb.toString());
+			buffWriter.write(sb.toString());
+			buffWriter.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -115,7 +117,8 @@ public class Controller extends JPanel implements ChangeListener, ActionListener
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		timeElapsed += (1000-10*DELTA)/1000;
-		if(timeElapsed <= 10) {
+		System.out.println(timeElapsed);
+		if(timeElapsed <= 1) {
 			logPositions(model);
 		}
 		model.updateParticles();

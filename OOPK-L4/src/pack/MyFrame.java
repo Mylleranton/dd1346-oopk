@@ -13,7 +13,7 @@ public class MyFrame extends JFrame{
 		
 	}
 	public MyFrame(){
-		Model model = new Model(10);
+		Model model = new Model(10000);
 		View view = new View(model);
 		Controller controller = new Controller(model, view);
 		try {
