@@ -26,7 +26,7 @@ public class MainC1 {
 		jframe.add(jpanel);
 		jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		// Skapa knapparna 
+		// Skapa knapparna med randomiserade attribut 
 		MyButton[] buttons = new MyButton[NUMBER_OF_BUTTONS];
 		for(int i = 0; i < NUMBER_OF_BUTTONS; i++){
 			buttons[i] = new MyButton(

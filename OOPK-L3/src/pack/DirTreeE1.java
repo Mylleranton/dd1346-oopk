@@ -6,16 +6,20 @@ import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class DirTreeModified extends JFrame implements ActionListener {
+public class DirTreeE1 extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 592140375690835306L;
 
 
-	public DirTreeModified() {
+	public DirTreeE1() {
       Container c = getContentPane();
       //*** Build the tree and a mouse listener to handle clicks
-      root = new DefaultMutableTreeNode(katalog);
+      //root = new DefaultMutableTreeNode(katalog);
       
+      
+      /*
+       * Ny root som heter LIV
+       */
       root = new DefaultMutableTreeNode("Liv");
       
       
@@ -69,11 +73,16 @@ public class DirTreeModified extends JFrame implements ActionListener {
 //      for (int i=0; i<list.length; i++ )
 //         buildTree(new File(f,list[ i ]), root); 
 //   }
+   
+   /*
+    * EGEN IMPLEMENTATION av trädstrukturen
+    */
    private void buildTree() {
 	   String[] lvl1 = {"Växter", "Djur", "Svampar"};
 	   String[] lvl2 = {"Ordningar", "Underordningarn", "Familjer", "Släkten", "Arter"};
 	   
 	   for(String str: lvl1) {
+		   // Lvl1 läggs till som barn till rooten, och så vidare
 		   DefaultMutableTreeNode child = buildSubNode(str, root);
 		   for (String str2 : lvl2){
 			   buildSubNode(str2, child);
@@ -81,6 +90,10 @@ public class DirTreeModified extends JFrame implements ActionListener {
 	   }
 	   
    }
+   
+   /*
+    * Helper-klass som sätter parent-child-förhållandet mellan två noder
+    */
    private DefaultMutableTreeNode buildSubNode(String name, DefaultMutableTreeNode parent) {
 	   DefaultMutableTreeNode child = 
 	         new DefaultMutableTreeNode( name );
@@ -135,7 +148,7 @@ public class DirTreeModified extends JFrame implements ActionListener {
 
    public static void main( String[ ] args ) {
        if(args.length>0) katalog=args[0];
-       new DirTreeModified();
+       new DirTreeE1();
    }
 
    private JCheckBox box;

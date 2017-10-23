@@ -25,12 +25,13 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-public class MainDirTree extends JFrame implements ActionListener {
+public class DirTreeMainC extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 592140375690835306L;
 
-	public MainDirTree() {
+	public DirTreeMainC() {
 		try {
+			// Kolla så att XML-koden är okej
 			checkXML(checkScanner);
 		} catch (final Exception e1) {
 			e1.printStackTrace();
@@ -60,14 +61,14 @@ public class MainDirTree extends JFrame implements ActionListener {
 		c.add(tree, BorderLayout.CENTER);
 		setVisible(true); // ** display the framed window
 	}
-
+	// Copied from DirTree
 	public void actionPerformed(ActionEvent e) {
 		final String cmd = e.getActionCommand();
 		if (cmd.equals(closeString)) {
 			dispose();
 		}
 	}
-
+	// Copied from DirTree
 	private void init() {
 		tree.setFont(new Font("Dialog", Font.BOLD, 12));
 		controls.add(box);
@@ -76,7 +77,7 @@ public class MainDirTree extends JFrame implements ActionListener {
 		controls.setLayout(new FlowLayout());
 		setSize(400, 400);
 	}
-
+	// Copied from DirTree
 	private void addButton(String n) {
 		final JButton b = new JButton(n);
 		b.setFont(new Font("Dialog", Font.BOLD, 12));
@@ -90,6 +91,7 @@ public class MainDirTree extends JFrame implements ActionListener {
 			return;
 		}
 		final MyNode n = (MyNode) p.getLastPathComponent();
+		// Kontaktera in ... som är ... som är ....
 		String msg = n.getNodeLevel() + ": " + n.getUserObject() + "\nBeskrivning: " + n.getText().trim()
 				+ ",\nmen allt som är " + n.getNodeLevel() + "";
 		for (final String s : getParentNames(n)) {
@@ -218,10 +220,10 @@ public class MainDirTree extends JFrame implements ActionListener {
 			// Mismatching <>/tags
 			if (!line.startsWith("<") || !line.contains(">")) {
 				throw new Exception(MSG);
-			} else if (line.startsWith("<?xml")) {
+			} 
+			else if (line.startsWith("<?xml")) {
 				continue;
-			}
-
+			} 
 			else if (line.startsWith("</")) {
 				final String openTag = balance.peek();
 				if (!openTag.equals(line.replaceAll("/", ""))) {
@@ -259,7 +261,7 @@ public class MainDirTree extends JFrame implements ActionListener {
 			e.printStackTrace();
 		}
 
-		new MainDirTree();
+		new DirTreeMainC();
 	}
 
 	private final JCheckBox box;

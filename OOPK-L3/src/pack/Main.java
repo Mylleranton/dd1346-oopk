@@ -25,51 +25,60 @@ public class Main {
 	private MyNode readNode(String...s) {
 		String line; 
 		String openTag = "";
-		MyNode retNode = new MyNode();
+		MyNode returnNode = new MyNode();
 		
+		// Scanna varje linje i XML-dokumentet
 		while (scanner.hasNextLine()) {
 			
-			//String[] nodeData = {"","",""};
+			// Beskrivande text för noden
 			String text = "";
+			// Ingen mer nästad nod -> Nästa linje
 			if (s.length == 0) {
 				line = scanner.nextLine();
 			} else {
 				line = s[0];
 			}
-			
+			// Skippa första linjen
 			if(line.startsWith("<?xml")) {
 				line = scanner.nextLine();
 			}
-			System.out.println(line);
+			// DEBUG System.out.println(line);
+			//Scanna varje ord för sig
 			Scanner innerScanner = new Scanner(line);
 			
 			while(innerScanner.hasNext()){
-				String word = innerScanner.next();				
+				String word = innerScanner.next();	
+				// Öppnande tag
 				if(word.startsWith("<")) {
-					retNode.setUserObject(word.substring(1));
+					returnNode.setUserObject(word.substring(1));
 					openTag = word.substring(1);
 				} 
+				// Avslutande tag
 				else if (word.endsWith(">")){
 					int startIndex = word.indexOf("\"");
 					int endIndex = word.lastIndexOf("\"");
-					retNode.setNodeLevel(word.substring(startIndex+1, endIndex));
+					returnNode.setNodeLevel(word.substring(startIndex+1, endIndex));
 				} 
+				// Annars är det en beskrivande text
 				else {
 					text += word.concat(" ");
 				}
 			}
 			
-			retNode.setText(text);
+			returnNode.setText(text);
+			
 			String next = scanner.nextLine();
+			// Om vi parsat hela denna sub-noden, returnera
 			if (next.startsWith("</".concat(openTag))) {
-				return retNode;
+				return returnNode;
 			}
+			// Om vi parsar vidare och hittar fler sub-noder, kör på
 			else if (next.startsWith("<")) {
-				retNode.add(readNode(next));
+				returnNode.add(readNode(next));
 			}
 		}
 
-		return retNode;
+		return returnNode;
 	}
 
 		

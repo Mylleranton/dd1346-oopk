@@ -40,7 +40,7 @@ public class MainC2 {
 					randomString());
 			jpanel.add(buttons[i]);
 			
-			// Enda skillnaden från förra är denna nya ActionListener
+			// Enda skillnaden från MainC1 är denna nya ActionListener
 			// som gör att den klickade knappen triggas x2 och de andra x1.
 			buttons[i].addActionListener(new ActionListener(){
 				@Override

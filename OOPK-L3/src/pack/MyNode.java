@@ -3,6 +3,7 @@ package pack;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public class MyNode extends DefaultMutableTreeNode {
+	// Varje nod har en beskrivande text och en nivå 
 	private String level;
 	private String text;
 	

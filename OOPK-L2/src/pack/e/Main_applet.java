@@ -1,6 +1,9 @@
 package pack.e;
 
-
+/**
+ * Applet version av MainE.java, ingen kodskillnad.
+ * 
+ */
 import javax.swing.JApplet;
 import javax.swing.JFrame;
 
