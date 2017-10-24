@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -24,55 +25,65 @@ import pack.Model.Particle;
 
 public class Controller extends JPanel implements ChangeListener, ActionListener {
 
+	// MV object
 	private Model model;
 	private View view;
 	
+	// Slider min/max values
 	private static final int L_MAX = 20;
 	private static final int L_MIN = 0;
-	private static final int DELTA_MAX = 99;
+	private static final int DELTA_MAX = 100;
 	private static final int DELTA_MIN = 0;
-	
 	private static double DELTA = DELTA_MAX;
 	
+	// Slider and log button objects
 	private JSlider LSlider;
 	private JSlider DeltaSlider;
 	private JButton logButton;
 	
+	// Timer and timestamps
 	private Timer timer;
 	private double timeElapsed = 0;
 	
-	
+	// Filewriter and format for CSV 
 	private BufferedWriter buffWriter;
 	private final String logFile;
 	private final DecimalFormat df = new DecimalFormat(".#####");
 	
+	// Let the controller control a model and a view
 	public Controller(Model m, View v) {
 		this.model = m;
 		this.view = v;
+		
+		// Initialize the graphics
 		initGraphics();
 		
-		timer = new Timer(1000-(int) (10*Math.floor(DELTA)), this);
+		// Start the timer
+		timer = new Timer((int) Math.floor(1000 - 9.5*DELTA), this);
 		timer.start();
 		
+		// Logfile and init the writer
 		logFile = System.getProperty("user.dir") + "/src/pack/log.csv";
 		try {
 			buffWriter = new BufferedWriter(new FileWriter(logFile, false));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		
-		
 	}
 	
+	// Initialize the graphics
 	private void initGraphics() {
+		// L and Delta-sliders
 		LSlider = new JSlider(JSlider.HORIZONTAL,
 				L_MIN, L_MAX,(L_MIN+L_MAX)/2);
 		DeltaSlider = new JSlider(JSlider.HORIZONTAL,
-				DELTA_MIN, DELTA_MAX,DELTA_MAX);
+				DELTA_MIN, DELTA_MAX, (DELTA_MAX + DELTA_MIN)/2);
 		
+		// ChangeListeners
 		LSlider.addChangeListener(this);
 		DeltaSlider.addChangeListener(this);
+		
+		// Slider graphics preferences
 		LSlider.setMajorTickSpacing(2);
 		LSlider.setPaintTicks(true);
 		LSlider.setPaintLabels(true);
@@ -80,10 +91,12 @@ public class Controller extends JPanel implements ChangeListener, ActionListener
 		DeltaSlider.setPaintTicks(true);
 		DeltaSlider.setPaintLabels(true);
 		
+		// Log-Button and button preferences
 		logButton = new JButton("Logga positioner");
 		logButton.setEnabled(true);
 		logButton.addActionListener(this);
 		
+		// Use simple GridLayout, add sliders, labels and button
 		this.setLayout(new GridLayout(3,2));
 		this.add(DeltaSlider);
 		this.add(LSlider);
@@ -92,19 +105,27 @@ public class Controller extends JPanel implements ChangeListener, ActionListener
 		this.add(logButton);
 	}
 	
-	private void logPositions(Model model){
+	// Logs the positions of all particles if called
+	// and flushes data to logFile
+	private void logPositions(){
+		// Stringbuilder for efficiency
 		StringBuilder sb = new StringBuilder();
-		Point2D[] positions = model.getParticlePositions();
-		
+		ArrayList<Point2D> positions = model.getParticlePositions();
+
+		// Append timestamp
 		sb.append(df.format(timeElapsed));
 		sb.append(",");
-		for(int i = 0; i<positions.length; i++) {
-			sb.append(df.format(positions[i].getX()));
+		
+		// Append all positions and linebreak
+		for(Point2D pos : positions) {
+			sb.append(df.format(pos.getX()));
 			sb.append(",");
-			sb.append(df.format(positions[i].getY()));
+			sb.append(df.format(pos.getY()));
 			sb.append(",");
 		}
 		sb.append("\n");
+
+		// Try writing to file
 		try {
 			buffWriter.write(sb.toString());
 			buffWriter.flush();
@@ -113,7 +134,8 @@ public class Controller extends JPanel implements ChangeListener, ActionListener
 		}
 	}
 	
-	private void checkIfStuck(){
+	// Check if particles are stuck
+	private void checkIfStuck() {
 		ArrayList<Particle> parts = model.getParticles();
 		ArrayList<Particle> stuckParts = model.getStuckParticles();
 
@@ -123,8 +145,7 @@ public class Controller extends JPanel implements ChangeListener, ActionListener
 			stuckPos.add(part.getPosition());
 		}
 		
-		
-		for (int i = 0; i < parts.size(); i++){
+		for (int i = 0; i < parts.size(); i++) {
 			Particle p = parts.get(i);
 			
 			// Stuck along edges of simulation
@@ -132,23 +153,24 @@ public class Controller extends JPanel implements ChangeListener, ActionListener
 					p.getPosition().getY() >= View.SIZE ||
 					p.getPosition().getX() <= 0 ||
 					p.getPosition().getY() <= 0) {
-				parts.remove(i);
+				
+				parts.remove(p);
 				stuckParts.add(p);
 				continue;
 			}
 			// Stuck along other object
-			else if (Math.abs(Math.pow(p.getPosition().getX()-300,2) + Math.pow(p.getPosition().getY()-300,2) - 150*150) < 5) {
-				//System.out.println("Obj is on edge");
-				parts.remove(i);
+			else if (Math.abs(Math.pow(p.getPosition().getX()-300,2) +
+					Math.pow(p.getPosition().getY()-300,2) - 150*150) < 5) {
+				
+				parts.remove(p);
 				stuckParts.add(p);
 				continue;
 			}
 			
 			// Stuck along other stuck particles
-			for(int j = 0; j<stuckPos.size(); j++){
-				Point2D stuck_ps = stuckPos.get(j);
-				if(stuck_ps.distance(p.getPosition()) <= 3){
-					parts.remove(i);
+			for(Particle stuck_ps : stuckParts){
+				if(stuck_ps.getPosition().distanceSq(p.getPosition()) <= 9){
+					parts.remove(p);
 					stuckParts.add(p);
 					stuckPos.add(p.getPosition());
 					break;
@@ -156,10 +178,9 @@ public class Controller extends JPanel implements ChangeListener, ActionListener
 			}	
 		}
 	}
-	
+	// State changed for either slider
 	@Override
 	public void stateChanged(ChangeEvent e) {
-		//System.out.println("Slider changed");
 		if(e.getSource() == LSlider) {
 			JSlider source = (JSlider) e.getSource();
 			Model.setL((double) source.getValue());
@@ -167,10 +188,12 @@ public class Controller extends JPanel implements ChangeListener, ActionListener
 		else if(e.getSource() == DeltaSlider) {
 			JSlider source = (JSlider) e.getSource();
 			DELTA = (double) source.getValue();
-			timer.setDelay(1000-(int) (10*Math.floor(DELTA)));
+			timer.setDelay((int) Math.floor(1000 - 9.5*DELTA));
+			System.out.println("Timer interval:" + timer.getDelay());
 		}
 	}
 
+	// Timer ticks in or button is pressed
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == logButton){
@@ -179,11 +202,14 @@ public class Controller extends JPanel implements ChangeListener, ActionListener
 			logButton.setText(MyFrame.LOG ? "Loggar data" : "Loggar inte data");
 			return;
 		}
-		timeElapsed += (1000-10*DELTA)/1000;
-		//System.out.println(timeElapsed);
-		if(timeElapsed <= 0.5 && MyFrame.LOG) {
-			logPositions(model);
+		
+		// Log positions if enabled
+		timeElapsed += (1000-9.5*DELTA)/1000;
+		if(timeElapsed <= 15 && MyFrame.LOG) {
+			logPositions();
 		}
+		
+		// Check particles for stuck, update postions and repaint canvas
 		checkIfStuck();
 		model.updateParticles();
 		view.repaint();
