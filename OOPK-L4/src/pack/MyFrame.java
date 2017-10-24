@@ -8,12 +8,15 @@ import javax.swing.UIManager;
 
 public class MyFrame extends JFrame{
 
+	public static Boolean LOG = false;
+	
 	public static void main(String[] args){
 		new MyFrame();
 		
 	}
 	public MyFrame(){
-		Model model = new Model(10000);
+		super("Brownsk rörelse");
+		Model model = new Model(150);
 		View view = new View(model);
 		Controller controller = new Controller(model, view);
 		try {
@@ -23,15 +26,14 @@ public class MyFrame extends JFrame{
 		    e.printStackTrace();
 		}
 		
-		this.setTitle("Brownsk rörelse");
-		
 		this.setLayout(new BorderLayout());
-		this.add(view, BorderLayout.NORTH);
-		this.getContentPane().setBackground(Color.BLACK);
-		this.add(controller, BorderLayout.SOUTH);
+		this.getContentPane().add(view, BorderLayout.NORTH);
+		this.getContentPane().add(controller, BorderLayout.SOUTH);
 		this.pack();
+
 		this.setVisible(true);
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+		
 		
 	}
 }
