@@ -2,78 +2,77 @@ package pack;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.ConnectException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Stack;
+
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.concurrent.Worker.State;
+import javafx.scene.web.WebHistory;
 
 public class EventController implements ActionListener, ChangeListener<State> {
 	private MenuBar mbar;
 	private ContentPane cpane;
+	private MainFrame frame;
 
-	private Stack<String> backSites;
-	private Stack<String> fwdSites;
-	public String currentSite;
-	private boolean engineLog = true;
+	private WebHistory webHistory;
+	private ObservableList<WebHistory.Entry> historyEntries;
 	
-	public EventController(MenuBar mbar, ContentPane cpane) {
+	private ExceptionChangeListener exChangeListener;
+	
+	public EventController(MenuBar mbar, ContentPane cpane, MainFrame frame) {
 		this.mbar = mbar;
 		this.cpane = cpane;
+		this.frame = frame;
+		exChangeListener = new ExceptionChangeListener();
 		
-		backSites = new Stack<String>();
-		fwdSites = new Stack<String>();
-		mbar.setActionListener(this);
+		mbar.setActionListener(this);		
 		
 		Platform.runLater(() -> {
-			cpane.wv.getEngine().getLoadWorker().stateProperty().addListener(this);
+			webHistory = cpane.webView.getEngine().getHistory();
+			historyEntries = webHistory.getEntries();
+			cpane.webView.getEngine().getLoadWorker().stateProperty().addListener(this);
+			cpane.webView.getEngine().getLoadWorker().exceptionProperty().addListener(exChangeListener);
 		});
-		updateFBButtons();
-
-	}
-	
-	
+	}	
 	private void loadWebpage(String newPage){
-		if (!currentSite.equals(newPage)) {
-			//backSites.push(currentSite);
-		}
-		//currentSite = newPage;
+
 		cpane.setWebpage(newPage);
 		mbar.addressField.setText(newPage);
 	}
 	
 	private void loadPreviousWebpage() {
-		String prevPage;
-		if (!backSites.isEmpty()) {
-			prevPage = backSites.pop();
-			fwdSites.push(currentSite);
-			
-			currentSite = prevPage;
-			engineLog = false;
-			cpane.setWebpage(prevPage);
-			mbar.addressField.setText(prevPage);
-		}
+		int currentIndex = webHistory.getCurrentIndex();
+		Platform.runLater(() -> {
+			webHistory.go(historyEntries.size() > 1 && currentIndex > 0 ? -1 : 0);
+		});
+		mbar.addressField.setText(historyEntries.get(currentIndex > 0 ? currentIndex-1 : currentIndex).getUrl());
 	}
 	
 	private void loadForwardWebpage(){
-		String fwdPage;
-		if(!fwdSites.isEmpty()){
-			fwdPage = fwdSites.pop();
-			backSites.push(currentSite);
-			
-			currentSite = fwdPage;
-			engineLog = false;
-			cpane.setWebpage(fwdPage);
-			mbar.addressField.setText(fwdPage);
-		}
+		int currentIndex = webHistory.getCurrentIndex();
+		Platform.runLater(() -> {
+			webHistory.go(historyEntries.size() > 1 && currentIndex < historyEntries.size()-1 ? 1 : 0);
+		});
+		mbar.addressField.setText(historyEntries.get(currentIndex < historyEntries.size() -1 ? currentIndex+1 : currentIndex).getUrl());
 	}
 	
 	private void updateFBButtons(){
-		boolean fwdButton = !fwdSites.isEmpty();
-		boolean backButton = !backSites.isEmpty();
+		int hisSize = historyEntries.size();
+		int curIndex = webHistory.getCurrentIndex();
+		boolean fwdButton = curIndex < hisSize - 1;
+		boolean backButton = curIndex > 0;
+		
+		System.out.println(fwdButton + " " + backButton);
 		
 		mbar.fwdButton.setEnabled(fwdButton);
 		mbar.fwdButton.setBorderPainted(fwdButton);
@@ -101,15 +100,25 @@ public class EventController implements ActionListener, ChangeListener<State> {
 	@Override
 	public void changed(ObservableValue<? extends State> observable, State oldValue, State newValue) {
 		if (newValue == Worker.State.SCHEDULED) {
-			
-			if ((currentSite != null && !currentSite.equals(cpane.wv.getEngine().getLocation()))
-					&& engineLog) {
-				backSites.push(currentSite);
-			}
-			currentSite = cpane.wv.getEngine().getLocation();
-			mbar.addressField.setText(currentSite);
+			cpane.jfxPanelProgress.setVisible(true);
+
 			updateFBButtons();
-		}		
+		} else if (newValue == Worker.State.SUCCEEDED) {
+			cpane.jfxPanelProgress.setVisible(false);
+		} 
+	}
+	
+	private class ExceptionChangeListener implements ChangeListener<Throwable> {
+
+		@Override
+		public void changed(ObservableValue<? extends Throwable> observable, Throwable oldValue, Throwable newValue) {
+			if(newValue != null) {
+				System.out.println("HEJ");
+				SwingUtilities.invokeLater(() -> {
+					frame.errorPane(newValue.getMessage());
+				});
+			}
+		}
 	}
 
 }

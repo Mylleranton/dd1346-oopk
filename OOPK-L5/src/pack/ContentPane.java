@@ -5,6 +5,8 @@ import java.awt.BorderLayout;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.web.WebView;
 
 import java.awt.Color;
@@ -22,56 +24,55 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 public class ContentPane extends JPanel {
-	
-	//private JEditorPane edPane;
-	//private JScrollPane scPane;
-	public WebView wv;
-	private JFXPanel jfxPanel;
+
+	public WebView webView;
+	private JFXPanel jfxPanelWeb;
+	public JFXPanel jfxPanelProgress;
+	private ProgressBar progressBar;
 	
 	public ContentPane() {
 		super();
+		
 		Dimension scSize = new Dimension(MainFrame.MAIN_WIDTH, MainFrame.HEIGHT-MenuBar.HEIGHT-100);
 		this.setPreferredSize(scSize);
 		this.setLayout(new GridBagLayout());
+		
 		GridBagConstraints c = new GridBagConstraints();
 		c.fill = GridBagConstraints.BOTH;
 		c.gridx = 0; c.gridy = 0;
 		c.weightx = 1; c.weighty = 1;
-		c.insets = new Insets(0,0,10,0);
-		
-		//edPane = new JEditorPane();
-		//scPane = new JScrollPane();
+		c.insets = new Insets(0,0,0,0);
 
-		//edPane.setEditable(false);
-		//edPane.setBackground(Color.WHITE);
-
-		//scPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		//scPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		//scPane.setEnabled(true);
-		
-		
 		
 		// TEST JAVA FX
-		jfxPanel = new JFXPanel();
-		//scPane.setViewportView(jfxPanel);
+		jfxPanelWeb = new JFXPanel();
+		progressBar = new ProgressBar();
+		jfxPanelProgress = new JFXPanel();
+		
 		Platform.runLater(() -> {
-			wv = new WebView();
-			jfxPanel.setScene(new Scene(wv));
-			wv.getEngine().setUserAgent(wv.getEngine().getUserAgent().replaceAll("Macintosh; ", ""));
+			webView = new WebView();
+			jfxPanelWeb.setScene(new Scene(webView));
+			webView.getEngine().setUserAgent(webView.getEngine().getUserAgent().replaceAll("Macintosh; ", ""));
+
+			jfxPanelProgress.setScene(new Scene(progressBar));
+			progressBar.progressProperty().bind(webView.getEngine().getLoadWorker().progressProperty());
+			
 		});
+		this.add(jfxPanelWeb,c);
 		
-		
-		this.add(jfxPanel,c);
+		c.gridy = 1; 
+		c.fill = GridBagConstraints.NONE;
+		c.insets = new Insets(0,0,0,0);
+		c.anchor = GridBagConstraints.LAST_LINE_END;
+		c.weightx = 0; c.weighty = 0;
+		this.add(jfxPanelProgress, c);
 		this.setVisible(true);
 	}
 	
 	public void setWebpage(String url) {
-		//edPane.setPage(new URL(url));
-		
 		Platform.runLater(() -> {
-			wv.getEngine().load(validateURL(url));
+			webView.getEngine().load(validateURL(url));
 		});
-		//scPane.validate();
 	}
 
 	private String validateURL(String url) {

@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
 public class MainFrame extends JFrame {
@@ -19,7 +20,7 @@ public class MainFrame extends JFrame {
 	public MainFrame(){
 		MenuBar mbar = new MenuBar();
 		ContentPane cpane = new ContentPane();
-		EventController controller = new EventController(mbar,cpane);
+		EventController controller = new EventController(mbar,cpane, this);
 		
 		
 		this.setTitle("Webbläsare");
@@ -41,6 +42,11 @@ public class MainFrame extends JFrame {
 		
 		cpane.setWebpage("http://google.com");
 		
+	}
+	public void errorPane(String text){
+		String msg = "Detta beror mest troligt på en dålig ansluting eller felaktig webbaddress.";
+		JOptionPane.showMessageDialog(this, msg + "\n" + text, 
+				"Anslutningen kunde inte upprättas", JOptionPane.ERROR_MESSAGE);
 	}
 
 }
