@@ -19,15 +19,15 @@ import javax.swing.JTextField;
  * @author anton
  *
  */
-public class MenuBar extends JPanel implements ActionListener {
+public class MenuBar extends JPanel{
 
-	private static final int MENU_HEIGHT = 100;
-	
+	private static final int MENU_HEIGHT = 50;
+	private static final int BUTTON_HEIGHT = 35;
 	private static final int ADDRESS_WIDTH = 700;
 	
-	private JTextField addressField;
-	private JButton fwdButton;
-	private JButton backButton;
+	public JTextField addressField;
+	public JButton fwdButton;
+	public JButton backButton;
 	
 	public MenuBar(){
 		super();
@@ -42,22 +42,19 @@ public class MenuBar extends JPanel implements ActionListener {
 		c.gridx = 2; c.gridy = 0; c.insets = new Insets(0,10,0,10);
 		addressField = new JTextField();
 		addressField.setPreferredSize(new Dimension(ADDRESS_WIDTH,20));
-		addressField.addActionListener(this);
 		addressField.setText("http://");
 		this.add(addressField, c);
 		
 		c.gridx = 1; c.gridy = 0;
 		fwdButton = new JButton("->");
-		fwdButton.setPreferredSize(new Dimension(MENU_HEIGHT/2,MENU_HEIGHT/2));
+		fwdButton.setPreferredSize(new Dimension(BUTTON_HEIGHT,BUTTON_HEIGHT));
 		fwdButton.setEnabled(true);
-		fwdButton.addActionListener(this);
 		this.add(fwdButton, c);
 		
 		c.gridx = 0; c.gridy = 0;
 		backButton = new JButton("<-");
-		backButton.setPreferredSize(new Dimension(MENU_HEIGHT/2,MENU_HEIGHT/2));
+		backButton.setPreferredSize(new Dimension(BUTTON_HEIGHT,BUTTON_HEIGHT));
 		backButton.setEnabled(true);
-		backButton.addActionListener(this);
 		this.add(backButton, c);
 
 		
@@ -69,20 +66,9 @@ public class MenuBar extends JPanel implements ActionListener {
 		addressField.setText(url);
 	}
 	
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		if(e.getSource() == addressField) {
-			System.out.println("Addressfältet uppdaterades");
-		}
-		else if (e.getSource() == fwdButton) {
-			System.out.println("FWD button klickades");
-			
-		} else if (e.getSource() == backButton) {
-			System.out.println("BACK button klickades");
-		}
-		
-				
+	public void setActionListener(ActionListener listener) {
+		this.backButton.addActionListener(listener);
+		this.fwdButton.addActionListener(listener);
+		this.addressField.addActionListener(listener);
 	}
-	
-
 }

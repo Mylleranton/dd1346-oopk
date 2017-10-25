@@ -19,6 +19,8 @@ public class MainFrame extends JFrame {
 	public MainFrame(){
 		MenuBar mbar = new MenuBar();
 		ContentPane cpane = new ContentPane();
+		EventController controller = new EventController(mbar,cpane);
+		
 		
 		this.setTitle("Webbläsare");
 		this.setPreferredSize(new Dimension(MAIN_WIDTH, MAIN_HEIGHT));
@@ -37,7 +39,7 @@ public class MainFrame extends JFrame {
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setVisible(true);
 		
-		cpane.setWebpage("http://guldtassens.com");
+		cpane.setWebpage("http://google.com");
 		
 	}
 
