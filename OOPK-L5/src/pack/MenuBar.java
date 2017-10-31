@@ -1,6 +1,3 @@
-/**
- * 
- */
 package pack;
 
 import java.awt.BorderLayout;
@@ -34,8 +31,7 @@ public class MenuBar extends JPanel{
 	public JTextField addressField;
 	public JButton fwdButton;
 	public JButton backButton;
-	public ListView<String> historyList;
-	private JFXPanel jfxHistory;
+	public JButton historyButton;
 	
 	public MenuBar(){
 		super();
@@ -66,15 +62,10 @@ public class MenuBar extends JPanel{
 		this.add(backButton, c);
 		
 		c.gridx = 0; c.gridy = 0;
-		jfxHistory = new JFXPanel();
-		jfxHistory.setPreferredSize(new Dimension(3*BUTTON_HEIGHT, BUTTON_HEIGHT));
-		Platform.runLater(() -> {
-			historyList = new ListView<String>();
-			jfxHistory.setScene(new Scene(historyList));
-			historyList.setPrefHeight(300);
-			historyList.setPrefWidth(200);
-		});
-		this.add(jfxHistory, c);
+		historyButton = new JButton("Historik");
+		historyButton.setPreferredSize(new Dimension(3*BUTTON_HEIGHT,BUTTON_HEIGHT));
+		historyButton.setEnabled(true);
+		this.add(historyButton, c);
 		
 		this.setVisible(true);
 	}
@@ -88,5 +79,6 @@ public class MenuBar extends JPanel{
 		this.backButton.addActionListener(listener);
 		this.fwdButton.addActionListener(listener);
 		this.addressField.addActionListener(listener);
+		this.historyButton.addActionListener(listener);
 	}
 }

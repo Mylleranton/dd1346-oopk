@@ -47,7 +47,7 @@ public class EventController implements ActionListener, ChangeListener<State> {
 	private void loadWebpage(String newPage){
 
 		cpane.setWebpage(newPage);
-		mbar.addressField.setText(newPage);
+		//mbar.addressField.setText(newPage);
 	}
 	
 	private void loadPreviousWebpage() {
@@ -55,7 +55,7 @@ public class EventController implements ActionListener, ChangeListener<State> {
 		Platform.runLater(() -> {
 			webHistory.go(historyEntries.size() > 1 && currentIndex > 0 ? -1 : 0);
 		});
-		mbar.addressField.setText(historyEntries.get(currentIndex > 0 ? currentIndex-1 : currentIndex).getUrl());
+		//mbar.addressField.setText(historyEntries.get(currentIndex > 0 ? currentIndex-1 : currentIndex).getUrl());
 	}
 	
 	private void loadForwardWebpage(){
@@ -63,7 +63,7 @@ public class EventController implements ActionListener, ChangeListener<State> {
 		Platform.runLater(() -> {
 			webHistory.go(historyEntries.size() > 1 && currentIndex < historyEntries.size()-1 ? 1 : 0);
 		});
-		mbar.addressField.setText(historyEntries.get(currentIndex < historyEntries.size() -1 ? currentIndex+1 : currentIndex).getUrl());
+		//mbar.addressField.setText(historyEntries.get(currentIndex < historyEntries.size() -1 ? currentIndex+1 : currentIndex).getUrl());
 	}
 	
 	private void updateFBButtons(){
@@ -72,12 +72,16 @@ public class EventController implements ActionListener, ChangeListener<State> {
 		boolean fwdButton = curIndex < hisSize - 1;
 		boolean backButton = curIndex > 0;
 		
-		System.out.println(fwdButton + " " + backButton);
+		//System.out.println(fwdButton + " " + backButton);
 		
 		mbar.fwdButton.setEnabled(fwdButton);
 		mbar.fwdButton.setBorderPainted(fwdButton);
 		mbar.backButton.setEnabled(backButton);
 		mbar.backButton.setBorderPainted(backButton);
+	}
+	
+	private void toggleHistory() {
+		cpane.jfxHistoryPanel.setVisible(!cpane.jfxHistoryPanel.isVisible());
 	}
 	
 	@Override
@@ -95,6 +99,10 @@ public class EventController implements ActionListener, ChangeListener<State> {
 			System.out.println("BACK button klickades");
 			loadPreviousWebpage();
 		}
+		else if (e.getSource() == mbar.historyButton) {
+			System.out.println("History button klickades");
+			toggleHistory();
+		}
 	}
 
 	@Override
@@ -105,6 +113,7 @@ public class EventController implements ActionListener, ChangeListener<State> {
 			updateFBButtons();
 		} else if (newValue == Worker.State.SUCCEEDED) {
 			cpane.jfxPanelProgress.setVisible(false);
+			mbar.addressField.setText(cpane.webView.getEngine().getLocation());
 		} 
 	}
 	
