@@ -23,7 +23,7 @@ public class MyFrame extends JFrame {
 		// Super JFrame calls
 
 		// MVC objects
-		Model model = new Model(15000);
+		Model model = new Model(10000);
 		View view = new View(model);
 		Controller controller = new Controller(model, view);
 

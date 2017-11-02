@@ -1,5 +1,5 @@
 % Matlab simulation of CSV data
-X = load('log.csv');
+X = load('logSAVE.csv');
 
 [r,c] = size(X);
 minXY = zeros(r,2);
