@@ -90,7 +90,7 @@ public class DirTreeMainC extends JFrame implements ActionListener {
 		final MyNode n = (MyNode) p.getLastPathComponent();
 		// Kontaktera in ... som är ... som är ....
 		String msg = n.getNodeLevel() + ": " + n.getUserObject() + "\nBeskrivning: " + n.getText().trim()
-				+ ",\nmen allt som är " + n.getNodeLevel() + "";
+				+ ",\nmen allt som är " + n.getUserObject() + "";
 		for (final String s : getParentNames(n)) {
 			msg += " är ".concat(s);
 		}
