@@ -63,7 +63,8 @@ public class MainFrame extends JFrame {
 		setVisible(true);
 
 		// Set default webpage
-		cpane.setWebpage("http://google.com");
+		controller.loadWebpage("http://google.com");
+		controller.buttonActivated = true;
 
 	}
 

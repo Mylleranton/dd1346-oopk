@@ -2,6 +2,7 @@ package pack;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.SwingUtilities;
 
@@ -45,6 +46,10 @@ public class EventController implements ActionListener, ChangeListener<State> {
 	 * Reference to the Exceptionlistener for the ContentPanes' WebView
 	 */
 	private ExceptionChangeListener exChangeListener;
+	
+	private ArrayList<String> history;
+	private int currentIndex;
+	public boolean buttonActivated;
 
 	/**
 	 * Initiates the controller with the objects that it controls and registers actionlisteners
@@ -61,6 +66,10 @@ public class EventController implements ActionListener, ChangeListener<State> {
 		exChangeListener = new ExceptionChangeListener();
 		mbar.setActionListener(this);
 		
+		history = new ArrayList<String>();
+		currentIndex = 0;
+		buttonActivated = false;
+		
 		// Initiate the History and register listeners
 		Platform.runLater(() -> {
 			webHistory = cpane.webView.getEngine().getHistory();
@@ -74,8 +83,11 @@ public class EventController implements ActionListener, ChangeListener<State> {
 	 * Load a new webpage into the WebView
 	 * @param newPage the page URL to be loaded
 	 */
-	private void loadWebpage(String newPage) {
+	public void loadWebpage(String newPage) {
 		cpane.setWebpage(newPage);
+		
+		history.add(newPage);
+		currentIndex = history.size()-1;
 	}
 	
 	/**
@@ -83,20 +95,32 @@ public class EventController implements ActionListener, ChangeListener<State> {
 	 * If no history is present, it does nothing.
 	 */
 	private void loadPreviousWebpage() {
-		int currentIndex = webHistory.getCurrentIndex();
-		Platform.runLater(() -> {
-			webHistory.go((historyEntries.size() > 1) && (currentIndex > 0) ? -1 : 0);
-		});
+		//int currentIndex = webHistory.getCurrentIndex();
+		//Platform.runLater(() -> {
+		//	webHistory.go((historyEntries.size() > 1) && (currentIndex > 0) ? -1 : 0);
+		//});
+		if (history.size() > 1 && currentIndex > 0) {
+			System.out.println("Går bak till: " + history.get(currentIndex-1));
+			cpane.setWebpage(history.get(currentIndex-1));
+			currentIndex--;
+		}
+		
 	}
 	/**
 	 * Go forward one page in the WebHistory.
 	 * If there is no forward page, it does nothing.
 	 */
 	private void loadForwardWebpage() {
-		int currentIndex = webHistory.getCurrentIndex();
-		Platform.runLater(() -> {
-			webHistory.go((historyEntries.size() > 1) && (currentIndex < (historyEntries.size() - 1)) ? 1 : 0);
-		});
+		//int currentIndex = webHistory.getCurrentIndex();
+		//Platform.runLater(() -> {
+		//	webHistory.go((historyEntries.size() > 1) && (currentIndex < (historyEntries.size() - 1)) ? 1 : 0);
+		//});
+		
+		if (history.size() > 1 && currentIndex < history.size() - 1) {
+			System.out.println("Går fram till: " + history.get(currentIndex+1));
+			cpane.setWebpage(history.get(currentIndex + 1));
+			currentIndex++;
+		}
 	}
 
 	/**
@@ -105,16 +129,21 @@ public class EventController implements ActionListener, ChangeListener<State> {
 	 * otherwise, they are disabled.
 	 */
 	private void updateFBButtons() {
-		int hisSize = historyEntries.size();
-		int curIndex = webHistory.getCurrentIndex();
-		boolean fwdButton = curIndex < (hisSize - 1);
-		boolean backButton = curIndex > 0;
+		//int hisSize = historyEntries.size();
+		//int curIndex = webHistory.getCurrentIndex();
+		//boolean fwdButton = curIndex < (hisSize - 1);
+		//boolean backButton = curIndex > 0;
+		
+		boolean fwdButton = currentIndex < history.size()-1;
+		boolean backButton = currentIndex > 0;
 		
 		// Set the Back and Forward buttons enabled/disabled
 		mbar.fwdButton.setEnabled(fwdButton);
 		mbar.fwdButton.setBorderPainted(fwdButton);
 		mbar.backButton.setEnabled(backButton);
 		mbar.backButton.setBorderPainted(backButton);
+		
+		//System.out.println("Historia " + history + " currentIndex " + currentIndex + " history size " + history.size());
 	}
 
 	/**
@@ -133,16 +162,20 @@ public class EventController implements ActionListener, ChangeListener<State> {
 		// Addressfield
 		if (e.getSource() == mbar.addressField) {
 			//System.out.println("Addressfältet uppdaterades");
+			buttonActivated = true;
 			loadWebpage(mbar.addressField.getText());
+			
 
 		//	Forward Button	
 		} else if (e.getSource() == mbar.fwdButton) {
 			//System.out.println("FWD button klickades");
+			buttonActivated = true;
 			loadForwardWebpage();
 			
 		// Back Button
 		} else if (e.getSource() == mbar.backButton) {
 			//System.out.println("BACK button klickades");
+			buttonActivated = true;
 			loadPreviousWebpage();
 			
 		// History Button
@@ -160,11 +193,19 @@ public class EventController implements ActionListener, ChangeListener<State> {
 	public void changed(ObservableValue<? extends State> observable, State oldValue, State newValue) {
 		if (newValue == Worker.State.SCHEDULED) {
 			cpane.jfxPanelProgress.setVisible(true);
-
+			
+			if (!buttonActivated) {
+				history.add(cpane.webView.getEngine().getLocation());
+				currentIndex = history.size()-1;
+			}
+			buttonActivated = false;
 			updateFBButtons();
+			
 		} else if (newValue == Worker.State.SUCCEEDED) {
 			cpane.jfxPanelProgress.setVisible(false);
 			mbar.setURLText(cpane.webView.getEngine().getLocation());
+			
+			
 		}
 	}
 	/**
