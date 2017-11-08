@@ -16,7 +16,7 @@ public class Item extends Component {
 
 	@Override
 	public void removeChild(Component c) {
-		System.out.println("Cannot remove child from an item");		
+		System.out.println("Cannot remove child from an item");
 	}
 
 	@Override
@@ -32,7 +32,7 @@ public class Item extends Component {
 
 	@Override
 	public Iterator<Component> iterator() {
-		// TODO Auto-generated method stub
 		return null;
 	}
+
 }
