@@ -1,7 +1,11 @@
 package composite;
 
 import java.util.ArrayList;
-
+/**
+ * Abstract class for components in composite pattern
+ * @author anton
+ *
+ */
 public abstract class Component implements Iterable<Component>, Cloneable {
 
 	protected String name;

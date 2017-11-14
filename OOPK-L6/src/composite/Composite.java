@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * Composite implementation of component methods for containers and leafs
+ * @author anton
+ *
+ */
 public class Composite extends Component {
 
 	protected ArrayList<Component> children = new ArrayList<Component>();
@@ -31,7 +36,7 @@ public class Composite extends Component {
 	public String toString() {
 		String returnString = name;
 
-		if (!hasChildren()) {
+		if (hasChildren()) {
 			returnString += " som innehåller";
 		}
 

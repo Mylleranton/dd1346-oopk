@@ -41,41 +41,58 @@ public class TestClass {
 		väska.addChild(påse);
 		väska.addChild(nessecär);
 
-		// System.out.println(väska.toString());
-		// System.out.println(väska.getWeight());
+		// Printar väskans innehåll med rekursiv metod (DFS)
+		if (false) {
+			System.out.println(väska.toString());
+			System.out.println(väska.getWeight());
+			
+			print(väska);
+		}
+		
 
-		//
-		// System.out.println(väska.name + ", enskild vikt " + väska.weight);
-		// printStructure(väska,0);
-
-		// DFS or BFS
-		// for(Component c : väska){
-		// System.out.println(c.name);
-		// }
+		// DFS or BFS (väljs i Iterables interface i composite)
+		if (false) {
+			for(Component c : väska){
+				System.out.println(c.name);
+			}
+		}
+		
 
 		// Klonar väskan och printar klonens innehåll
-		Component clone = väska.clone();
-		Component clone2 = väska.clone();
+		if(true) {
+			Component clone = väska.clone();
+			Component clone2 = väska.clone();
+			
+			print(clone2);
+			
+			System.out.println(clone == väska);
+			System.out.println(clone == clone2);
+			// Lägger till ett barn till väskan och klonen2, och printar klonen som är
+			// opåverkad.
+			ask.addChild(new Item("TEST", 2));
+			clone2.addChild(new Item("TEST 2", 1));
+			
+			print(clone2);
+		}
 		
-		printStructure(clone, 0);
-		System.out.println(clone == väska);
-		System.out.println(clone == clone2);
-		// Lägger till ett barn till väskan, och printar klonen som är
-		// opåverkad.
-		ask.addChild(new Item("TEST", 2));
-		clone2.addChild(new Item("TEST 2", 1));
-		printStructure(clone, 0);
 
 	}
 
 	// Ger djupet-först-genomgång
-	public static void printStructure(Component root, int nivå) {
+	private static void printStructure(Component root, int nivå) {
 		for (Component c : root.getChildren()) {
 			System.out.println(String.join("", Collections.nCopies(nivå, "-")) + c.name + ", enskild vikt " + c.weight);
 			if (c.hasChildren()) {
 				printStructure(c, nivå + 2);
 			}
 		}
+	}
+	public static void print(Component root) {
+		System.out.println("--------------------------------");
+		System.out.println(root.name + ", enskild vikt " + root.weight);
+		printStructure(root,2);
+		
+		System.out.println("--------------------------------");
 	}
 
 }

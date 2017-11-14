@@ -6,7 +6,7 @@ import builder.*;
 
 public class Test {
 	
-	private static int N = 10000000;
+	private static int N = 200000;
 	private static ArrayList arrList;
 	private static LinkedList linList;
 	private static BuilderList bList;

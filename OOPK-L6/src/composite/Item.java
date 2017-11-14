@@ -3,6 +3,13 @@ package composite;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+
+/**
+ * Leaf implemetation
+ * 
+ * @author anton
+ *
+ */
 public class Item extends Component {
 
 	public Item(String inName, double inWeight) {
