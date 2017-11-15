@@ -1,0 +1,83 @@
+package pack;
+
+import java.io.IOException;
+import java.io.StringReader;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+public class HTMLParser {
+
+	private String htmlString;
+	private DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+	private DocumentBuilder documentBuilder = null;
+	private Document document = null;
+	
+	public HTMLParser(String html) throws SAXException {
+		htmlString = html;
+		try {
+			documentBuilder = builderFactory.newDocumentBuilder();
+			document = documentBuilder.parse(new InputSource(new StringReader(htmlString)));
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		}
+		document.getDocumentElement().normalize();
+	}
+	public void printStructure() {
+		printStructure(document.getChildNodes());
+	}
+	private void printStructure(NodeList nl) {
+		for(int i = 0; i < nl.getLength(); i++) {
+			System.out.println(nl.item(i).getNodeName());
+			printStructure(nl.item(i).getChildNodes());
+		}
+	}
+	
+	public String getBodyContent() {
+		getBodyNode().normalize();
+		return MessageParser.getInnerXML(getBodyNode(), true);
+	}
+	
+	public String getPlainBodyContent() {
+		return getBodyNode().getTextContent().trim();
+	}
+	
+	public Node getBodyNode() {
+		NodeList rootNodes = document.getDocumentElement().getElementsByTagName("body");
+		if (rootNodes.getLength() == 0 ) {
+			return null;
+		}
+		return rootNodes.item(0);
+	}
+	
+	public Element buildNode(String input) throws SAXException {
+		Document localDoc = null;
+		try {
+			localDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(new StringReader(input)));
+			return localDoc.getDocumentElement();
+		} catch (IOException | ParserConfigurationException e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+	}
+	public void replaceBodyNode(Node newNode) {
+		Node parentNode = getBodyNode().getParentNode();
+		document.adoptNode(newNode);
+		parentNode.replaceChild(newNode, getBodyNode());
+	}
+	
+	public String getHTMLText(){
+		return "<html>\n" + MessageParser.getInnerXML(document.getDocumentElement(), true) + "\n</html>";
+	}
+}

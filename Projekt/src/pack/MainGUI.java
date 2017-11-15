@@ -33,6 +33,7 @@ public class MainGUI extends JFrame {
 	private JPanel buttonPanel;
 	
 	public MainGUI() {
+		new MessageParser();
 		setPreferredSize(new Dimension(WIDTH, HEIGHT));
 		
 		try {
