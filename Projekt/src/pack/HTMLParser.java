@@ -71,13 +71,40 @@ public class HTMLParser {
 		}
 		
 	}
+	/**
+	 * Replaces the current <body>-node with the provided newNode
+	 * @param newNode The new body node.
+	 */
 	public void replaceBodyNode(Node newNode) {
 		Node parentNode = getBodyNode().getParentNode();
 		document.adoptNode(newNode);
 		parentNode.replaceChild(newNode, getBodyNode());
 	}
 	
+	/**
+	 * Returns this document represented as a string
+	 */
 	public String getHTMLText(){
 		return "<html>\n" + MessageParser.getInnerXML(document.getDocumentElement(), true) + "\n</html>";
+	}
+	
+	/**
+	 * Appends the formatted HTML line to the end of this documents body section enclosed within <p>-tags
+	 */
+	public void appendToBodyNode(String line) {
+		if (!line.startsWith("<p>")) {
+			line = "<p>" + line;
+		}
+		if (!line.endsWith("</p>")) {
+			line = line + "</p>";
+		}
+		Element node = null;
+		try {
+			node = buildNode(line);
+		} catch (SAXException e) {
+			e.printStackTrace();
+		}
+		document.adoptNode(node);
+		this.getBodyNode().appendChild(node);
 	}
 }

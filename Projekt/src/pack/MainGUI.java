@@ -3,15 +3,23 @@ package pack;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
+import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
@@ -22,18 +30,30 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.MaskFormatter;
+import javax.swing.text.NumberFormatter;
 
 public class MainGUI extends JFrame {
 	
-	public static int WIDTH = 600;
-	public static int HEIGHT = 400;
+	public static int WIDTH = 800;
+	public static int HEIGHT = 550;
 	
 	private JTabbedPane chatPanel;
 	private JPanel buttonPanel;
+	private JPanel optionPanel;
+	private ArrayList<ChatThread> chats = new ArrayList<ChatThread>();
 	
-	public MainGUI() {
-		new MessageParser();
+	
+	public static class MainGUIHolder {
+		private static final MainGUI INSTANCE = new MainGUI();
+	}
+	
+	private MainGUI() {
+		
+		
 		setPreferredSize(new Dimension(WIDTH, HEIGHT));
 		
 		try {
@@ -42,23 +62,53 @@ public class MainGUI extends JFrame {
 			e.printStackTrace();
 		}
 		// Layout, och en knappanel samt en chatpanel
-		setLayout(new BorderLayout());
+		setLayout(new GridBagLayout());
 				
 		chatPanel = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 		chatPanel.setPreferredSize(new Dimension((int) (0.6*WIDTH), HEIGHT));
-		chatPanel.setBackground(Color.ORANGE);
 		
 		buttonPanel = new JPanel();
-		buttonPanel.setPreferredSize(new Dimension((int) (0.4*WIDTH), HEIGHT));
+		buttonPanel.setPreferredSize(new Dimension((int) (0.4*WIDTH), (int) (0.6*HEIGHT)));
 		buttonPanel.setLayout(new GridBagLayout());
 		
 		
+		optionPanel = new JPanel();
+		optionPanel.setPreferredSize(new Dimension((int) (0.4*WIDTH), (int) (0.4*HEIGHT)));
+		optionPanel.setBorder(BorderFactory.createLineBorder(new Color(184,207,229), 2));
+		optionPanel.setLayout(new GridBagLayout());
+		optionPanel.setBackground(Color.orange);
+		
 		setupButtonPanel();
-		setupChatPanel();
+		HACKACHATPANEL();
+		HACKACHATPANEL();
+
 		
-		add(chatPanel, BorderLayout.EAST);
+		GridBagConstraints c = new GridBagConstraints();
+		c.fill = GridBagConstraints.BOTH;
+		c.anchor = GridBagConstraints.NORTHWEST;
+		c.weightx = 1; c.weighty = 1;
+		c.gridx = 0; c.gridy = 0;
+		add(buttonPanel, c);
 		
-		add(buttonPanel, BorderLayout.WEST);
+		c.gridy = 1;
+		add(optionPanel, c);
+		
+		c.gridx = 1; c.gridy = 0;
+		c.gridheight = 2;
+		add(chatPanel, c);
+		
+		chatPanel.addChangeListener(new ChangeListener(){
+
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				if (chatPanel.getSelectedIndex() >= 0) {
+					ChatThread newChat = chats.get(chatPanel.getSelectedIndex());
+					MainGUI.getInstance().setOptionPanel(newChat.getChatPanelGUI().getOptionPane());
+				}
+				
+			}
+			
+		});
 		
 		pack();
 
@@ -68,6 +118,7 @@ public class MainGUI extends JFrame {
 	
 	private void setupButtonPanel(){
 		GridBagConstraints c = new GridBagConstraints();
+
 		GridBagConstraints cSep = new GridBagConstraints();
 
 		
@@ -75,20 +126,63 @@ public class MainGUI extends JFrame {
 		JLabel ipLabelValue = new JLabel(getIp().getHostAddress());
 		JLabel ipLabelName = new JLabel("Nuvarande IP: ");
 		
+		JLabel portLabelName = new JLabel("Port: ");
+		JTextField portTextField = new JTextField(new Integer(Main.CURRENT_PORT).toString());
+		JButton portChangeButton = new JButton("Ändra");
+		
+		portTextField.setEditable(false);
+		portTextField.setEnabled(true);
+		
+		portChangeButton.setEnabled(true);
+		portChangeButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (portTextField.getText().matches("[1-9]\\d{2,5}")) {
+					portTextField.setForeground(Color.BLACK);
+					if (!Main.outgoingConnectionEnabled) {
+						if(portTextField.isEditable()) {
+							portChangeButton.setText("Ändra");
+							portTextField.setEditable(false);
+							Main.CURRENT_PORT = Integer.parseInt(portTextField.getText());
+							
+						} else {
+							portChangeButton.setText("Klar");
+							portTextField.setEditable(true);
+						}
+					}
+				}
+				else {
+					portTextField.setForeground(Color.RED);
+				}
+				
+			}
+			
+		});
+		
 		c.gridx = 0; c.gridy = 0;
 		c.anchor = GridBagConstraints.NORTHWEST;
 		c.insets = new Insets(5,5,5,5);
-		c.weightx = 1; c.weighty = 1;
+		c.weightx = 1; c.weighty = 0;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		buttonPanel.add(ipLabelName, c);
 		
-		c.gridx = 1; c.gridy = 1;
+		c.gridx = 1; c.gridy = 0;
 		buttonPanel.add(ipLabelValue, c);
 		
+		c.gridx = 0; c.gridy = 2;
+		buttonPanel.add(portLabelName, c);
+	
+		c.gridx = 0; c.gridy = 3;
+		buttonPanel.add(portChangeButton, c);
+		
+		c.gridx = 1;
+		buttonPanel.add(portTextField, c);
+		
 		// Separator
-		cSep.fill = GridBagConstraints.BOTH;
-		cSep.gridy = 2; cSep.gridwidth = 2;
-		cSep.insets = new Insets(10,0,10,0);
+		cSep.fill = GridBagConstraints.HORIZONTAL;
+		cSep.gridy = 4; cSep.gridwidth = 2;
+		cSep.insets = new Insets(5,0,5,0);
 		buttonPanel.add(new JSeparator(SwingConstants.HORIZONTAL),cSep);
 		
 		// Showing name labels and buttons
@@ -116,14 +210,14 @@ public class MainGUI extends JFrame {
 			}
 		});
 		
-		c.gridx = 0; c.gridy = 3;
+		c.gridx = 0; c.gridy = 5;
 		buttonPanel.add(nameLabelName, c);
-		c.gridx = 1; c.gridy = 4;
+		c.gridx = 1; c.gridy = 6;
 		buttonPanel.add(nameTextField, c);
 		c.gridx = 0;
 		buttonPanel.add(nameChangeButton, c);
 		
-		cSep.gridy = 5;
+		cSep.gridy = 7;
 		buttonPanel.add(new JSeparator(SwingConstants.HORIZONTAL),cSep);
 		
 		// Connect buttons and labels
@@ -138,31 +232,36 @@ public class MainGUI extends JFrame {
 		
 		
 		c.gridx = 0; c.gridwidth = 2;
-		c.gridy = 6;
+		c.gridy = 8;
 		buttonPanel.add(connectLabel, c);
 		
 		c.gridwidth = 1;
-		c.gridx = 0; c.gridy = 7;
+		c.gridx = 0; c.gridy = 9;
 		buttonPanel.add(ipLabel, c);
 		
-		c.gridx = 1; c.gridy = 7;
+		c.gridx = 1; c.gridy = 9;
 		buttonPanel.add(connectIpField, c);
 		
-		c.gridx = 0; c.gridy = 8;
+		c.gridx = 0; c.gridy = 10;
 		buttonPanel.add(portLabel, c);
 		
-		c.gridx = 1; c.gridy = 8;
+		c.gridx = 1; c.gridy = 10;
 		buttonPanel.add(connectPortField, c);
 		
-		c.gridx = 0; c.gridy = 9;
+		c.gridx = 0; c.gridy = 11;
 		buttonPanel.add(connectButton, c);
+		
+		c.gridy = 12; c.weighty = 1;
+		c.insets = new Insets(0,0,0,0);
+		buttonPanel.add(new JLabel(), c);
+		
 	}
 	
-	private void setupChatPanel(){
-		// Add a chatpanel instance to the main layout
-		chatPanel.add("Test", new ChatPanelGUI());
-
+	public void HACKACHATPANEL() {
+		ChatThread t = new ChatThread("Hej");
+		chats.add(t);
 	}
+	
 	
 	/*
 	 * Return the current local IP of the computer
@@ -175,4 +274,27 @@ public class MainGUI extends JFrame {
 		}
 		return null;
 	}
+	/**
+	 * Called on creation of a ChatThread
+	 * @param gui
+	 */
+	public void addChatPanel(ChatPanelGUI gui){
+		chatPanel.add(gui.getName(), gui);
+	}
+	
+	public void setOptionPanel(JPanel optionPanel) {
+		GridBagConstraints c = new GridBagConstraints();
+		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1; c.weighty = 1;
+		c.gridx = 0; c.gridy = 0;
+		
+		this.optionPanel.add(optionPanel, c);
+		optionPanel.setVisible(true);
+	}
+	
+	
+	public static MainGUI getInstance() {
+		return MainGUIHolder.INSTANCE;
+	}
+
 }

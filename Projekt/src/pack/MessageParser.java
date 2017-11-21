@@ -68,7 +68,7 @@ public class MessageParser {
 					messageBuilder.setMessageSender(node.getAttributes().getNamedItem("sender").getNodeValue());
 				}
 				else {
-					messageBuilder.setMessageSender("null");
+					//messageBuilder.setMessageSender("null");
 				}
 			}
 			// Text-tag, extrahera färg, annars välj svart
@@ -83,6 +83,10 @@ public class MessageParser {
 				}
 				messageBuilder.setText(getInnerXML(node,false));
 				//System.out.println(getInnerXML(node));
+			}
+			// Disconnect-tag
+			else if(node.getNodeName().equalsIgnoreCase("disconnect")) {
+				messageBuilder.disconnect();
 			}
 			else if (node.getParentNode() != null) {
 				if (node.getParentNode().getNodeName().equalsIgnoreCase("text")) {

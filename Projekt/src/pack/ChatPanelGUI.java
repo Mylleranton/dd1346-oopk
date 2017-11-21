@@ -7,10 +7,12 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 
 import org.w3c.dom.Element;
@@ -21,16 +23,23 @@ public class ChatPanelGUI extends JPanel {
 	
 	private JTextPane chatDisplayPane;
 	private JTextPane chatTypingPane;
+	private JPanel optionPane;
+	private JList<String> userList;
 	
 	JButton italicsButton;
 	JButton boldButton;
 	JButton colorButton;
 	
-	public ChatPanelGUI() {
+	JButton chatSendButton;
+	
+	public ChatPanelGUI(String name) {
+		this.setName(name);
 		initializeGUI();
+		setupOptionPane();
 		
 	}
-	public void initializeGUI() {
+	
+	private void initializeGUI() {
 		
 		setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
@@ -95,12 +104,55 @@ public class ChatPanelGUI extends JPanel {
 		add(scrollPane,c);
 		c.gridwidth = 1;
 		
-		JButton chatSendButton = new JButton("Skicka");
+		chatSendButton = new JButton("Skicka");
 		c.weightx = 0; c.weighty = 0;
 		c.gridx = 3;
 		add(chatSendButton,c);
 		chatSendButton.addActionListener(new SendMessageEventHandler());
+		
 	}
+	
+	private void setupOptionPane() {
+		optionPane = new JPanel();
+		optionPane.setLayout(new GridBagLayout());
+		optionPane.setPreferredSize(new Dimension((int) (0.4*MainGUI.WIDTH), (int) (0.4*MainGUI.HEIGHT)));
+		
+		JButton kickButton = new JButton("Koppla ned användare");
+		JButton endChatButton = new JButton("Avsluta chatt");
+		
+		userList = new JList<String>(); 
+		userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		userList.setLayoutOrientation(JList.VERTICAL);
+		userList.setVisibleRowCount(-1);
+		JScrollPane listScroller = new JScrollPane(userList);
+		listScroller.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		
+		GridBagConstraints c = new GridBagConstraints();
+		c.insets = new Insets(5,5,5,5);
+		c.anchor = GridBagConstraints.NORTHWEST;
+		c.weightx = 1; c.weighty = 1;
+		c.fill = GridBagConstraints.BOTH;
+		
+		c.gridx = 0; c.gridy = 0;
+		c.gridheight = 2;
+		optionPane.add(listScroller, c);
+		
+		c.gridheight = 1;
+		c.gridx = 1;
+		optionPane.add(kickButton, c);
+		
+		c.gridy = 1;
+		optionPane.add(endChatButton, c);
+		optionPane.setVisible(true);
+	}
+	
+	public JPanel getOptionPane() {
+		return this.optionPane;
+	}
+	public JList<String> getUserList() {
+		return this.userList;
+	}
+	
 
 	
 	/*
@@ -120,7 +172,6 @@ public class ChatPanelGUI extends JPanel {
 			}
 
 			if (e.getSource() == boldButton) {
-				
 				checkAndInsertTag("b", p);
 			}
 			else if (e.getSource() == italicsButton) {
@@ -251,13 +302,26 @@ public class ChatPanelGUI extends JPanel {
 		
 	}
 	
-	private class SendMessageEventHandler implements ActionListener{
+	private class SendMessageEventHandler implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			
+			if(e.getSource() == chatSendButton) {
+				HTMLParser displayParser = null;
+				HTMLParser typingParser = null;
+				try {
+					displayParser = new HTMLParser(chatDisplayPane.getText());
+					typingParser = new HTMLParser(chatTypingPane.getText());
+				} catch (SAXException e1) {
+					System.out.println("Error in HTML-formatting");
+					e1.printStackTrace();
+					return;
+				}
+				displayParser.appendToBodyNode(typingParser.getBodyContent());
+				chatDisplayPane.setText(displayParser.getHTMLText());
+				
+				chatTypingPane.setText("");
+			}
 		}
-		
 	}
-
 }
