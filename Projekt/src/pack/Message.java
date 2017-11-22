@@ -38,13 +38,37 @@ public class Message {
 		return sb.toString();
 	}
 	
+	public String getHTMLRepresentation() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(MESSAGE_SENDER + ": ");
+		if (TEXT != null) {
+			sb.append("<font" +  ( TEXT_COLOR == null ? ">" : " color=\"" + TEXT_COLOR + "\">"));
+			sb.append(TEXT);
+			sb.append("</font>");
+		}
+		if(DISCONNECT) {
+			sb.append("\n------ END OF CHAT ------ ");
+		}
+		String text = sb.toString();
+		text = text.replaceAll("<fetstil>", "<b>");
+		text = text.replaceAll("</fetstil>", "</b>");
+		text = text.replaceAll("<kursiv>", "<i>");
+		text = text.replaceAll("</kursiv>", "</i>");
+	
+		return text;
+	}
+	
+	public boolean disconnect() {
+		return this.DISCONNECT;
+	}
+	
 	
 	
 	public static class MessageBuilder {
 		private String M_SENDER;
 		private String T_COLOR;
 		private String TEXT;
-		private boolean DISC;
+		private boolean DISC = false;
 		
 		public MessageBuilder setTextColor(String c) {
 			this.T_COLOR = c;

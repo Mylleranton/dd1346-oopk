@@ -32,6 +32,10 @@ public class ClientThread extends Thread{
 			buffWriter.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			if(message.disconnect()) {
+				endConnection();
+			}
 		}
 	}
 	

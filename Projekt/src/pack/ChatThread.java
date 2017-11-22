@@ -13,9 +13,12 @@ public class ChatThread extends Thread {
 	public ChatThread(String name, ArrayList<ClientThread> clients) {
 		this.clients = clients;
 		SwingUtilities.invokeLater(() -> {
-			chatPanel = new ChatPanelGUI(name);
+			chatPanel = new ChatPanelGUI(name, this);
 			MainGUI.getInstance().addChatPanel(chatPanel);
 			chatPanel.getUserList().setListData(getClientNames());
+			
+			String[] a = {"A","B"};
+			chatPanel.getUserList().setListData(a);
 			MainGUI.getInstance().setOptionPanel(chatPanel.getOptionPane());
 		});
 	}
@@ -30,7 +33,28 @@ public class ChatThread extends Thread {
 	}
 	
 	public void dispatchMessage(Message message) {
-		
+		for(ClientThread t : clients) {
+			t.sendMessage(message);
+		}
+		if(message.disconnect()) {
+			MainGUI.getInstance().removeChatPanel(this);
+		}
+	}
+	
+	public void sendMessageToClient(String clientName, Message message) {
+		ClientThread thread = null;
+		for (ClientThread t : clients) {
+			if (t.getID().equalsIgnoreCase(clientName)) {
+				thread = t;
+				break;
+			}
+		}
+		if (thread != null) {
+			thread.sendMessage(message);
+		}
+		else {
+			System.out.println("Tried to send message to " + clientName + ". Could not find any client with that ID.");
+		}
 	}
 	
 	public ArrayList<ClientThread> getClients() {
@@ -51,7 +75,6 @@ public class ChatThread extends Thread {
 			names[i] = clients.get(i).getID();
 		}
 		return names;
-		
 	}
 
 }

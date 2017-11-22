@@ -79,8 +79,8 @@ public class MainGUI extends JFrame {
 		optionPanel.setBackground(Color.orange);
 		
 		setupButtonPanel();
-		HACKACHATPANEL();
-		HACKACHATPANEL();
+		HACKACHATPANEL("1");
+		HACKACHATPANEL("2");
 
 		
 		GridBagConstraints c = new GridBagConstraints();
@@ -257,8 +257,8 @@ public class MainGUI extends JFrame {
 		
 	}
 	
-	public void HACKACHATPANEL() {
-		ChatThread t = new ChatThread("Hej");
+	public void HACKACHATPANEL(String in) {
+		ChatThread t = new ChatThread(in);
 		chats.add(t);
 	}
 	
@@ -283,6 +283,8 @@ public class MainGUI extends JFrame {
 	}
 	
 	public void setOptionPanel(JPanel optionPanel) {
+		this.optionPanel.removeAll();
+		this.optionPanel.validate();
 		GridBagConstraints c = new GridBagConstraints();
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1; c.weighty = 1;
@@ -290,6 +292,19 @@ public class MainGUI extends JFrame {
 		
 		this.optionPanel.add(optionPanel, c);
 		optionPanel.setVisible(true);
+		Main.DEBUG("OptionPane changed with tab changed");
+	}
+	
+	public void removeChatPanel(ChatThread chat) {
+		System.out.println("Removing tab " + chat.getChatPanelGUI().getName());
+		chats.remove(chat);
+		chatPanel.remove(chat.getChatPanelGUI());
+		if (chatPanel.getSelectedComponent() != null) {
+			ChatPanelGUI gui = (ChatPanelGUI) chatPanel.getSelectedComponent();
+			setOptionPanel(gui.getOptionPane());
+		} else {
+			setOptionPanel(new JPanel());
+		}
 	}
 	
 	

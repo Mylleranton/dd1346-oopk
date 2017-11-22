@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -11,6 +12,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -30,13 +32,30 @@ public class MessageParser {
 		} catch (ParserConfigurationException e) {
 		    e.printStackTrace();  
 		}
-	
-		File f = new File(System.getProperty("user.dir") + fileName);
-		parseInputStream(f);
+		
+		//File f = new File(System.getProperty("user.dir") + fileName);
+		//parseInputStream(f);
 	}
 	
-	public Message getParsedMessage() {
-		return parseInputStream(new File(System.getProperty("user.dir") + fileName));
+	
+	public Message convertHTMLtoMessage(HTMLParser parser) {
+		messageBuilder = new Message.MessageBuilder();
+		messageBuilder.setMessageSender(Main.CURRENT_CHAT_NAME);
+		if(parser.getFontNode().hasAttributes()) {
+			if (parser.getFontNode().getAttributes().getNamedItem("color") != null) {
+				messageBuilder.setTextColor(parser.getFontNode().getAttributes().getNamedItem("color").getNodeValue());
+			}
+		}
+		if (parser.getBodyContent() != null) {
+			String text = parser.getBodyContent();
+			text = text.replaceAll("<b>", "<fetstil>");
+			text = text.replaceAll("</b>", "</fetstil>");
+			text = text.replaceAll("<i>", "<kursiv>");
+			text = text.replaceAll("</i>", "</kursiv>");
+			messageBuilder.setText(text);
+		}
+		return new Message(messageBuilder);
+		
 	}
 	
 	private Message parseInputStream(File bfs) {
@@ -48,17 +67,31 @@ public class MessageParser {
 			e.printStackTrace();
 		}
 		
-		Element root = doc.getDocumentElement();
 		NodeList nodes = doc.getChildNodes();
 		messageBuilder = new Message.MessageBuilder();
-		buildMessage(nodes);
-		Message m = new Message(messageBuilder);
-		//System.out.println(m.toString());
-		
+		buildMessageFromXML(nodes);
+		Message m = new Message(messageBuilder);		
 		return m;
 
 	}
-	public void buildMessage(NodeList nodes) {
+	
+	private Message parseInputStream(String inputString) {
+		Document doc = null;
+		try {
+			doc = documentBuilder.parse(new InputSource(new StringReader(inputString)));
+			doc.getDocumentElement().normalize();
+		} catch (SAXException | IOException e) {
+			e.printStackTrace();
+		}
+		
+		NodeList nodes = doc.getChildNodes();
+		messageBuilder = new Message.MessageBuilder();
+		buildMessageFromXML(nodes);
+		Message m = new Message(messageBuilder);		
+		return m;
+
+	}
+	private void buildMessageFromXML(NodeList nodes) {
 		
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node node = nodes.item(i);
@@ -92,7 +125,7 @@ public class MessageParser {
 				if (node.getParentNode().getNodeName().equalsIgnoreCase("text")) {
 
 					if (node.getNodeName().equalsIgnoreCase("kursivt")) {
-						messageBuilder.setText(messageBuilder.getText().replace("<kursivt>", "<i>").replace("</kursivt>", "</i>"));
+						messageBuilder.setText(messageBuilder.getText().replace("<kursiv>", "<i>").replace("</kursiv>", "</i>"));
 					}
 					else if (node.getNodeName().equalsIgnoreCase("fetstil")) {
 						messageBuilder.setText(messageBuilder.getText().replace("<fetstil>", "<b>").replace("</fetstil>", "</b>"));
@@ -100,9 +133,8 @@ public class MessageParser {
 				}
 			}
 			if(node.hasChildNodes()) {
-				buildMessage(node.getChildNodes());
-			}
-					
+				buildMessageFromXML(node.getChildNodes());
+			}		
 		}
 	}
 	
@@ -113,10 +145,10 @@ public class MessageParser {
 		DOMImplementationLS implementationLS = (DOMImplementationLS) node.getOwnerDocument().getImplementation().getFeature("LS", "3.0");
 		LSSerializer lsSerializer = implementationLS.createLSSerializer();  
 		lsSerializer.getDomConfig().setParameter("xml-declaration", false);
-		
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < node.getChildNodes().getLength(); i++){
 			sb.append(lsSerializer.writeToString(node.getChildNodes().item(i)));
+			//System.out.println(lsSerializer.writeToString(node.getChildNodes().item(i)));
 		}
 		String retString = sb.toString();
 		if(!html) {
@@ -124,11 +156,10 @@ public class MessageParser {
 		} else {
 			retString = retString.trim();
 		}
-		
 		return retString;
 		
 	}
-	
+
 	
 	
 	

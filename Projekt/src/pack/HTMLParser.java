@@ -44,8 +44,8 @@ public class HTMLParser {
 	}
 	
 	public String getBodyContent() {
-		getBodyNode().normalize();
-		return MessageParser.getInnerXML(getBodyNode(), true);
+		//getBodyNode().normalize();
+		return MessageParser.getInnerXML(getFontNode(), true);
 	}
 	
 	public String getPlainBodyContent() {
@@ -53,11 +53,11 @@ public class HTMLParser {
 	}
 	
 	public Node getBodyNode() {
-		NodeList rootNodes = document.getDocumentElement().getElementsByTagName("body");
-		if (rootNodes.getLength() == 0 ) {
+		NodeList rootNode = document.getDocumentElement().getElementsByTagName("body");
+		if (rootNode.getLength() == 0 ) {
 			return null;
 		}
-		return rootNodes.item(0);
+		return rootNode.item(0);
 	}
 	
 	public Element buildNode(String input) throws SAXException {
@@ -88,6 +88,7 @@ public class HTMLParser {
 		return "<html>\n" + MessageParser.getInnerXML(document.getDocumentElement(), true) + "\n</html>";
 	}
 	
+	
 	/**
 	 * Appends the formatted HTML line to the end of this documents body section enclosed within <p>-tags
 	 */
@@ -104,7 +105,29 @@ public class HTMLParser {
 		} catch (SAXException e) {
 			e.printStackTrace();
 		}
-		document.adoptNode(node);
-		this.getBodyNode().appendChild(node);
+
+		Node newNode = document.importNode(node, true);
+		this.getBodyNode().appendChild(newNode);
+		
+
+	}
+	
+	public Node getFontNode() {
+		NodeList rootNodes = document.getDocumentElement().getElementsByTagName("font");
+		if (rootNodes.getLength() == 0 ) {
+			try {
+				Element fontNode = buildNode("<font></font>");
+				document.adoptNode(fontNode);
+				Node parentNode = getBodyNode().getParentNode();
+				fontNode.appendChild(getBodyNode());
+				parentNode.appendChild(fontNode);
+				return fontNode;
+			} catch (SAXException e) {
+				e.printStackTrace();
+			}
+			
+			return null;
+		}
+		return rootNodes.item(0);
 	}
 }
