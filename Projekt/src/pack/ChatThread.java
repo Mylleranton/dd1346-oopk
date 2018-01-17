@@ -70,13 +70,13 @@ public class ChatThread extends Thread {
 	 * @param clientName - The recieving client
 	 * @param message - The message to be sent
 	 */
-	public void sendMessageToClient(String clientName, Message message) {
-		ClientThread thread = getClientThread(clientName);
+	public void sendMessageToClient(String clientID, Message message) {
+		ClientThread thread = getClientThread(clientID);
 		if (thread != null) {
 			thread.sendMessage(message);
 		}
 		else {
-			System.out.println("Tried to send message to " + clientName + ". Could not find any client with that ID.");
+			System.out.println("Tried to send message to " + clientID + ". Could not find any client with that ID.");
 		}
 	}
 	
@@ -84,12 +84,12 @@ public class ChatThread extends Thread {
 	 * Disconnects a certain client
 	 * @param clientName - The client to be disconnected
 	 */
-	public void disconnecClient(String clientName) {
-		ClientThread thread = getClientThread(clientName);
+	public void disconnecClient(String clientID) {
+		ClientThread thread = getClientThread(clientID);
 		if(thread != null) {
 			removeClientThread(thread);
 			thread.endConnection();
-			dispatchMessage(new Message(new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME).setText("Client " + clientName + " has disconnected")));
+			dispatchMessage(new Message(new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME).setText("Client " + clientID + " has disconnected")));
 		}
 		onDisconnect();
 	}
@@ -158,15 +158,28 @@ public class ChatThread extends Thread {
 		}
 		return names;
 	}
+	
+	/**
+	 * Returns an array with the connected ClientThreads unique IDs
+	 * @return
+	 */
+	public String[] getClientIDs() {
+		String[] names = new String[clients.size()];
+		for(int i = 0; i < clients.size(); i++) {
+			names[i] = clients.get(i).getID();
+		}
+		return names;
+	}
+	
 	/**
 	 * Return the clientthread with name name
 	 * @param name
 	 * @return The assiociated ClientThread if found, otherwise null
 	 */
-	private ClientThread getClientThread(String name) {
+	private ClientThread getClientThread(String ID) {
 		ClientThread thread = null;
 		for (ClientThread t : clients) {
-			if (t.getID().equalsIgnoreCase(name)) {
+			if (t.getID().equalsIgnoreCase(ID)) {
 				thread = t;
 				break;
 			}
