@@ -38,7 +38,7 @@ public class ClientThread extends Thread {
 		} catch (NullPointerException e) {
 			System.err.println(e.getMessage());
 		} finally {
-			if(message.disconnect()) {
+			if(message.disconnect() && message.getSender().equalsIgnoreCase(Main.CURRENT_CHAT_NAME)) {
 				Main.DEBUG("Message sent contained disconnect - ending streams");
 				chatThread.removeClientThread(this);
 				endConnection();
