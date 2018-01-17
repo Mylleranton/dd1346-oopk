@@ -1,6 +1,7 @@
 package pack;
 
 import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -27,8 +28,8 @@ public class Main {
 		@SuppressWarnings("unused")
 		MainGUI mainGUI_instance = MainGUI.getInstance();
 
-		// MessageParser p = new MessageParser();
-		// System.out.println(p.getParsedMessage().getMessage());
+		//Message m = new MessageParser().parseInputStream(new File(System.getProperty("user.dir") + "/src/pack/ExampleMessage.xml"));
+		//System.out.println(m.getMessage());
 	}
 
 	/**
@@ -60,13 +61,31 @@ public class Main {
 			}
 		} catch (IOException e) {
 			System.err.println("Server ended connection: " + e.getMessage());
+			JOptionPane.showMessageDialog(MainGUI.getInstance(), "Failed to open a server on the provided port:\n" + e.getMessage(), "Could not open server", JOptionPane.ERROR_MESSAGE);
 		} finally {
 			outgoingConnectionEnabled = false;
 			try {
 				serverSocket.close();
 			} catch (IOException e) {
 				System.err.println("Failed to close server: " + e.getMessage());
+			} catch (NullPointerException e) {
+				System.err.println("Failed to close server: " + e.getMessage());
 			}
+		}
+	}
+	
+	public void stopServer() {
+		if (MainGUI.getInstance().getChats().size() > 0) {
+			int answer = JOptionPane.showConfirmDialog(MainGUI.getInstance(), "Det finns anslutna klienter till servern som körs.\n En nedstängning kommer leda till att samtliga kopplas från.\n Vill du fortsätta?", "Bekräfta avstängning", JOptionPane.YES_NO_OPTION);
+			if (answer == JOptionPane.NO_OPTION) {
+				return;
+			}
+		}
+		try {
+			serverSocket.close();
+			outgoingConnectionEnabled = false;
+		} catch (IOException e) {
+			System.err.println("Failed to close server. " + e.getMessage());
 		}
 	}
 

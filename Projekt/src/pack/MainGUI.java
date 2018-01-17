@@ -27,6 +27,8 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.Timer;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -41,7 +43,7 @@ import javax.swing.event.ChangeListener;
 public class MainGUI extends JFrame {
 
 	public static int WIDTH = 800;
-	public static int HEIGHT = 550;
+	public static int HEIGHT = 540;
 
 	private JTabbedPane chatPanel;
 	private JPanel buttonPanel;
@@ -63,30 +65,43 @@ public class MainGUI extends JFrame {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 		// Layout, och en knappanel samt en chatpanel
 		setLayout(new GridBagLayout());
 
 		chatPanel = new JTabbedPane(SwingConstants.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 		chatPanel.setPreferredSize(new Dimension((int) (0.6 * WIDTH), HEIGHT));
+		chatPanel.setMaximumSize(new Dimension((int) (0.7 * WIDTH), HEIGHT));
+		chatPanel.setMinimumSize(new Dimension((int) (0.6 * WIDTH), HEIGHT));
+
 
 		buttonPanel = new JPanel();
-		buttonPanel.setPreferredSize(new Dimension((int) (0.4 * WIDTH), (int) (0.6 * HEIGHT)));
+		buttonPanel.setPreferredSize(new Dimension((int) (0.4 * WIDTH), (int) (0.65 * HEIGHT)));
+		buttonPanel.setMinimumSize(new Dimension((int) (0.4 * WIDTH), (int) (0.65 * HEIGHT)));
+		buttonPanel.setMaximumSize(new Dimension((int) (0.4 * WIDTH), (int) (0.7 * HEIGHT)));
 		buttonPanel.setLayout(new GridBagLayout());
-
+		TitledBorder b = BorderFactory.createTitledBorder(BorderFactory.createMatteBorder(2, 0, 0, 2, new Color(184, 207, 229)), "ANSLUTNINGSINSTÄLLNINGAR", TitledBorder.RIGHT, TitledBorder.TOP, null, Color.GRAY);
+		buttonPanel.setBorder(b);
+		
+		
 		optionPanel = new JPanel();
-		optionPanel.setPreferredSize(new Dimension((int) (0.4 * WIDTH), (int) (0.4 * HEIGHT)));
-		optionPanel.setBorder(BorderFactory.createLineBorder(new Color(184, 207, 229), 2));
+		optionPanel.setPreferredSize(new Dimension((int) (0.4 * MainGUI.WIDTH), (int) (0.3 * MainGUI.HEIGHT)));
+		optionPanel.setMinimumSize(new Dimension((int) (0.4 * MainGUI.WIDTH), (int) (0.3 * MainGUI.HEIGHT)));
+		optionPanel.setMaximumSize(new Dimension((int) (0.4 * MainGUI.WIDTH), (int) (0.30 * MainGUI.HEIGHT)));
 		optionPanel.setLayout(new GridBagLayout());
-
+		TitledBorder b2 = BorderFactory.createTitledBorder(BorderFactory.createMatteBorder(2, 0, 0, 2, new Color(184, 207, 229)), "CHATTINSTÄLLNINGAR", TitledBorder.RIGHT, TitledBorder.TOP, null, Color.GRAY);
+		optionPanel.setBorder(b2);
+		
 		setupButtonPanel();
 
 		GridBagConstraints c = new GridBagConstraints();
-		c.fill = GridBagConstraints.BOTH;
+		c.fill = GridBagConstraints.VERTICAL;
 		c.anchor = GridBagConstraints.NORTHWEST;
 		c.weightx = 0.3;
-		c.weighty = 0.5;
+		c.weighty = 0.6;
 		c.gridx = 0;
 		c.gridy = 0;
+		c.insets = new Insets(5,5,5,5);
 		add(buttonPanel, c);
 		
 		c.weightx = 0.3;
@@ -94,11 +109,13 @@ public class MainGUI extends JFrame {
 		c.gridy = 1;
 		add(optionPanel, c);
 
+		
 		c.weightx = 1;
 		c.weighty = 1;
 		c.gridx = 1;
 		c.gridy = 0;
 		c.gridheight = 2;
+		c.insets = new Insets(0,0,0,0);
 		add(chatPanel, c);
 
 		// Make sure that the OptionPanel changes with the tabs of the chatpanel
@@ -110,7 +127,6 @@ public class MainGUI extends JFrame {
 					ChatThread newChat = chats.get(chatPanel.getSelectedIndex());
 					MainGUI.getInstance().setOptionPanel(newChat.getChatPanelGUI().getOptionPane());
 				}
-
 			}
 
 		});
@@ -137,6 +153,12 @@ public class MainGUI extends JFrame {
 		JTextField portTextField = new JTextField(new Integer(Main.CURRENT_PORT).toString());
 		JButton portChangeButton = new JButton("Ändra");
 		JButton startServerButton = new JButton("Starta server");
+
+		JLabel serverStatus = new JLabel();
+		serverStatus.setText("Server AV");
+		serverStatus.setForeground(Color.RED);
+		serverStatus.setHorizontalAlignment(SwingConstants.CENTER);
+		serverStatus.setVerticalAlignment(SwingConstants.CENTER);
 
 		portTextField.setEditable(false);
 		portTextField.setEnabled(true);
@@ -167,21 +189,54 @@ public class MainGUI extends JFrame {
 		});
 
 		startServerButton.setEnabled(true);
+		Timer timer = new Timer(1000*5, new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(!Main.outgoingConnectionEnabled) {
+					startServerButton.setEnabled(true);
+					startServerButton.setText("Starta server");
+					serverStatus.setText("Server AV");
+					serverStatus.setForeground(Color.RED);
+				} else {
+					startServerButton.setEnabled(true);
+					startServerButton.setText("Stäng ned server");
+					serverStatus.setText("Server PÅ");
+					serverStatus.setForeground(Color.GREEN);
+				}
+			}
+			
+		});
 		startServerButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new Thread(new Runnable() {
-					@Override
-					public void run() {
-						Main.getInstance().startServer();
-					}
-
-				}).start();
-
-				portChangeButton.setEnabled(false);
-				startServerButton.setEnabled(false);
-				portTextField.setEditable(false);
+				if(!Main.outgoingConnectionEnabled) {
+					new Thread(new Runnable() {
+						@Override
+						public void run() {
+							Main.getInstance().startServer();
+						}
+					}).start();
+					timer.start();
+					portChangeButton.setEnabled(false);
+					portTextField.setEditable(false);
+					startServerButton.setEnabled(false);
+					
+				} 
+				else {
+					new Thread(new Runnable() {
+						@Override
+						public void run() {
+							Main.getInstance().stopServer();
+						}
+					}).start();
+					portChangeButton.setEnabled(true);
+					startServerButton.setEnabled(false);
+					portTextField.setEditable(false);
+					
+				}
+				
 			}
 
 		});
@@ -189,7 +244,7 @@ public class MainGUI extends JFrame {
 		c.gridx = 0;
 		c.gridy = 0;
 		c.anchor = GridBagConstraints.NORTHWEST;
-		c.insets = new Insets(5, 5, 5, 5);
+		c.insets = new Insets(15, 5, 5, 5);
 		c.weightx = 1;
 		c.weighty = 0;
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -201,6 +256,7 @@ public class MainGUI extends JFrame {
 
 		c.gridx = 0;
 		c.gridy = 2;
+		c.insets = new Insets(5, 5, 5, 5);
 		buttonPanel.add(portLabelName, c);
 
 		c.gridx = 0;
@@ -211,16 +267,18 @@ public class MainGUI extends JFrame {
 		buttonPanel.add(portTextField, c);
 
 		c.gridx = 0;
-		c.gridwidth = 2;
 		c.gridy = 4;
 		buttonPanel.add(startServerButton, c);
-		c.gridwidth = 1;
+		
+		c.gridx = 1;
+		
+		buttonPanel.add(serverStatus, c);
 
 		// Separator
 		cSep.fill = GridBagConstraints.HORIZONTAL;
 		cSep.gridy = 5;
 		cSep.gridwidth = 2;
-		cSep.insets = new Insets(5, 0, 5, 0);
+		cSep.insets = new Insets(5, 10, 5, 10);
 		buttonPanel.add(new JSeparator(SwingConstants.HORIZONTAL), cSep);
 
 		// Showing name labels and buttons
@@ -367,6 +425,7 @@ public class MainGUI extends JFrame {
 
 		c.gridx = 0;
 		c.gridy = 12;
+		c.insets = new Insets(5, 5, 10, 5);
 		buttonPanel.add(connectButton, c);
 
 		c.gridx = 1;
@@ -374,7 +433,7 @@ public class MainGUI extends JFrame {
 
 		c.gridy = 13;
 		c.weighty = 1;
-		c.insets = new Insets(0, 0, 0, 0);
+		c.insets = new Insets(0, 0, 10, 0);
 		buttonPanel.add(new JLabel(), c);
 
 	}

@@ -60,10 +60,12 @@ public class Message {
 			//sb.append("\n------ END OF CHAT ------ ");
 		}
 		String text = sb.toString();
-		text = text.replaceAll("<fetstil>", "<b>");
-		text = text.replaceAll("</fetstil>", "</b>");
-		text = text.replaceAll("<kursiv>", "<i>");
-		text = text.replaceAll("</kursiv>", "</i>");
+		
+		// STYLE IMPLEMENTATION
+//		text = text.replaceAll("<fetstil>", "<b>");
+//		text = text.replaceAll("</fetstil>", "</b>");
+//		text = text.replaceAll("<kursiv>", "<i>");
+//		text = text.replaceAll("</kursiv>", "</i>");
 
 		return text;
 	}

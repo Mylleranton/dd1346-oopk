@@ -76,8 +76,6 @@ public class ChatPanelGUI extends JPanel {
 		setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		c.fill = GridBagConstraints.BOTH;
-		c.weightx = 1;
-		c.weighty = 1;
 		c.insets = new Insets(5, 5, 5, 5);
 
 		// Chat Display Pane in ScrollPane
@@ -89,17 +87,24 @@ public class ChatPanelGUI extends JPanel {
 		JScrollPane scrollPaneDisplay = new JScrollPane(chatDisplayPane,
 				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
+		scrollPaneDisplay.setPreferredSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.6 * HEIGHT));
+		scrollPaneDisplay.setMinimumSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.6 * HEIGHT));
+		scrollPaneDisplay.setMaximumSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.55 * HEIGHT));
+		
+		
+		c.weightx = 1;
+		c.weighty = 1;
 		c.gridx = 0;
 		c.gridy = 0;
-		c.gridwidth = 4;
+		c.gridwidth = 2;
 		add(scrollPaneDisplay, c);
 		c.gridwidth = 1;
 
 		// Separator
 		GridBagConstraints cSep = new GridBagConstraints();
-		cSep.fill = GridBagConstraints.BOTH;
+		cSep.fill = GridBagConstraints.HORIZONTAL;
 		cSep.gridy = 1;
-		cSep.gridwidth = 4;
+		cSep.gridwidth = 2;
 		cSep.insets = new Insets(10, 0, 10, 0);
 		add(new JSeparator(SwingConstants.HORIZONTAL), cSep);
 
@@ -108,22 +113,22 @@ public class ChatPanelGUI extends JPanel {
 		italicsButton = new JButton("i");
 		italicsButton.addActionListener(tsEventHandler);
 
-		boldButton = new JButton("B");
+		boldButton = new JButton("b");
 		boldButton.addActionListener(tsEventHandler);
 
 		colorButton = new JButton("Färg");
 		colorButton.addActionListener(tsEventHandler);
 
 		c.gridy = 2;
-		c.gridx = 0;
+		c.gridx = 1;
 		c.weightx = 0;
 		c.weighty = 0;
 		add(boldButton, c);
 
-		c.gridx = 1;
+		c.gridy = 3;
 		add(italicsButton, c);
 
-		c.gridx = 2;
+		c.gridy = 4;
 		add(colorButton, c);
 
 		// Input pane within scrollpane
@@ -132,24 +137,30 @@ public class ChatPanelGUI extends JPanel {
 
 		// NOTE: THE INITIAL TEXT MUST BE NON_EMPTY IN ORDER FOR THE HTML-FORMATTING TO BE CORRECT
 		chatTypingPane.setText("--");
-		chatTypingPane.setPreferredSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.2 * HEIGHT));
+		chatTypingPane.setPreferredSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.4 * HEIGHT));
+		chatTypingPane.setMinimumSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.4 * HEIGHT));
+		chatTypingPane.setMaximumSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.45 * HEIGHT));
 
 		JScrollPane scrollPane = new JScrollPane(chatTypingPane, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
 				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		scrollPane.setPreferredSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.3 * HEIGHT));
+		
+		scrollPane.setPreferredSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.4 * HEIGHT));
+		scrollPane.setMinimumSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.4 * HEIGHT));
+		scrollPane.setMaximumSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.45 * HEIGHT));
 
-		c.weighty = 0.5;
+		c.weighty = 0.15;
 		c.weightx = 1;
-		c.gridy = 3;
+		c.gridy = 2;
 		c.gridx = 0;
-		c.gridwidth = 3;
+		c.gridheight = 4;
 		add(scrollPane, c);
-		c.gridwidth = 1;
+		c.gridheight = 1;
 
 		chatSendButton = new JButton("Skicka");
 		c.weightx = 0;
 		c.weighty = 0;
-		c.gridx = 3;
+		c.gridx = 1;
+		c.gridy = 5;
 		add(chatSendButton, c);
 		chatSendButton.addActionListener(new SendMessageEventHandler());
 
@@ -161,7 +172,9 @@ public class ChatPanelGUI extends JPanel {
 	private void setupOptionPane() {
 		optionPane = new JPanel();
 		optionPane.setLayout(new GridBagLayout());
-		optionPane.setPreferredSize(new Dimension((int) (0.4 * MainGUI.WIDTH), (int) (0.4 * MainGUI.HEIGHT)));
+		optionPane.setPreferredSize(new Dimension((int) (0.4 * MainGUI.WIDTH), (int) (0.32 * MainGUI.HEIGHT)));
+		optionPane.setMinimumSize(new Dimension((int) (0.4 * MainGUI.WIDTH), (int) (0.3 * MainGUI.HEIGHT)));
+		optionPane.setMaximumSize(new Dimension((int) (0.4 * MainGUI.WIDTH), (int) (0.32 * MainGUI.HEIGHT)));
 
 		kickButton = new JButton("Koppla ned användare");
 		kickButton.setEnabled(false);
@@ -177,20 +190,25 @@ public class ChatPanelGUI extends JPanel {
 		GridBagConstraints c = new GridBagConstraints();
 		c.insets = new Insets(5, 5, 5, 5);
 		c.anchor = GridBagConstraints.NORTHWEST;
-		c.weightx = 1;
-		c.weighty = 1;
 		c.fill = GridBagConstraints.BOTH;
 
+		c.weightx = 1;
+		c.weighty = 1;
 		c.gridx = 0;
 		c.gridy = 0;
 		c.gridheight = 2;
+		c.gridwidth = 2;
 		optionPane.add(listScroller, c);
 
+		c.weightx = 1;
+		c.weighty = 0.2;
+		c.gridwidth= 1;
 		c.gridheight = 1;
-		c.gridx = 1;
+		c.gridy = 2;
+		c.fill = GridBagConstraints.HORIZONTAL;
 		optionPane.add(kickButton, c);
 
-		c.gridy = 1;
+		c.gridx = 1;
 		optionPane.add(endChatButton, c);
 		optionPane.setVisible(true);
 
@@ -453,16 +471,16 @@ public class ChatPanelGUI extends JPanel {
 					e1.printStackTrace();
 					return;
 				}
-
 				Message msg = new MessageParser().convertHTMLtoMessage(typingParser);
-				// System.out.println(msg.getHTMLRepresentation());
-				displayParser.appendToBodyNode(msg.getHTMLRepresentation());
-				chatDisplayPane.setText(displayParser.getHTMLText());
-				// Main.DEBUG(chatDisplayPane.getText());
-				chatTypingPane.setText("");
+				// Only send non empty messages
+				if(!msg.getMessageText().trim().equalsIgnoreCase("")) {
+					// System.out.println(msg.getHTMLRepresentation());
+					displayParser.appendToBodyNode(msg.getHTMLRepresentation());
+					chatDisplayPane.setText(displayParser.getHTMLText());
+					chatTypingPane.setText("");
 
-				chatThread.dispatchMessage(msg);
-
+					chatThread.dispatchMessage(msg);
+				}
 			}
 		}
 	}

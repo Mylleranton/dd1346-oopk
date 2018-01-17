@@ -90,7 +90,6 @@ public class ChatThread extends Thread {
 	public void disconnectClient(ClientThread thread) {
 		removeClientThread(thread);
 		thread.endConnection();
-		dispatchMessage(new Message(new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME).setText("Client " + thread.getDisplayName() + " has disconnected")));
 		onDisconnect();
 	}
 	

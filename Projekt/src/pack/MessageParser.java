@@ -31,8 +31,7 @@ public class MessageParser {
 			e.printStackTrace();
 		}
 
-		// File f = new File(System.getProperty("user.dir") + fileName);
-		// parseInputStream(f);
+		
 	}
 
 	public Message convertHTMLtoMessage(HTMLParser parser) {
@@ -54,10 +53,13 @@ public class MessageParser {
 			}
 			String text = bodyContent;
 			// Main.DEBUG(text);
-			text = text.replaceAll("<b>", "<fetstil>");
-			text = text.replaceAll("</b>", "</fetstil>");
-			text = text.replaceAll("<i>", "<kursiv>");
-			text = text.replaceAll("</i>", "</kursiv>");
+			
+			// STYLE IMPLEMENTATION
+//			text = text.replaceAll("<b>", "<fetstil>");
+//			text = text.replaceAll("</b>", "</fetstil>");
+//			text = text.replaceAll("<i>", "<kursiv>");
+//			text = text.replaceAll("</i>", "</kursiv>");
+			
 			messageBuilder.setText(text);
 		}
 		return new Message(messageBuilder);
@@ -65,7 +67,7 @@ public class MessageParser {
 	}
 	
 	@SuppressWarnings("unused")
-	private Message parseInputStream(File bfs) {
+	public Message parseInputStream(File bfs) {
 		Document doc = null;
 		try {
 			doc = documentBuilder.parse(bfs);
@@ -127,20 +129,7 @@ public class MessageParser {
 			else if (node.getNodeName().equalsIgnoreCase("disconnect")) {
 				messageBuilder.disconnect();
 			}
-			// else if (node.getParentNode() != null) {
-			// if (node.getParentNode().getNodeName().equalsIgnoreCase("text"))
-			// {
-			//
-			// if (node.getNodeName().equalsIgnoreCase("kursivt")) {
-			// //messageBuilder.setText(messageBuilder.getText().replace("<kursiv>",
-			// "<i>").replace("</kursiv>", "</i>"));
-			// }
-			// if (node.getNodeName().equalsIgnoreCase("fetstil")) {
-			// //messageBuilder.setText(messageBuilder.getText().replace("<fetstil>",
-			// "<b>").replace("</fetstil>", "</b>"));
-			// }
-			// }
-			// }
+
 			if (node.hasChildNodes()) {
 				buildMessageFromXML(node.getChildNodes());
 			}
