@@ -36,9 +36,16 @@ public class Message {
 
 		return sb.toString();
 	}
+	public String getMessageText() {
+		return TEXT;
+	}
 
 	public String getSender() {
 		return MESSAGE_SENDER == null ? "" : MESSAGE_SENDER;
+	}
+	
+	public String getTextColor() {
+		return TEXT_COLOR;
 	}
 
 	public String getHTMLRepresentation() {
@@ -50,7 +57,7 @@ public class Message {
 			sb.append("</font>");
 		}
 		if (DISCONNECT) {
-			sb.append("\n------ END OF CHAT ------ ");
+			//sb.append("\n------ END OF CHAT ------ ");
 		}
 		String text = sb.toString();
 		text = text.replaceAll("<fetstil>", "<b>");

@@ -56,7 +56,7 @@ public class MainGUI extends JFrame {
 	 * Initialize graphics
 	 */
 	private MainGUI() {
-		setPreferredSize(new Dimension(WIDTH, HEIGHT));
+		setPreferredSize(new Dimension((int) WIDTH, (int) HEIGHT));
 
 		try {
 			UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
@@ -77,22 +77,25 @@ public class MainGUI extends JFrame {
 		optionPanel.setPreferredSize(new Dimension((int) (0.4 * WIDTH), (int) (0.4 * HEIGHT)));
 		optionPanel.setBorder(BorderFactory.createLineBorder(new Color(184, 207, 229), 2));
 		optionPanel.setLayout(new GridBagLayout());
-		optionPanel.setBackground(Color.orange);
 
 		setupButtonPanel();
 
 		GridBagConstraints c = new GridBagConstraints();
 		c.fill = GridBagConstraints.BOTH;
 		c.anchor = GridBagConstraints.NORTHWEST;
-		c.weightx = 1;
-		c.weighty = 1;
+		c.weightx = 0.3;
+		c.weighty = 0.5;
 		c.gridx = 0;
 		c.gridy = 0;
 		add(buttonPanel, c);
-
+		
+		c.weightx = 0.3;
+		c.weighty = 1;
 		c.gridy = 1;
 		add(optionPanel, c);
 
+		c.weightx = 1;
+		c.weighty = 1;
 		c.gridx = 1;
 		c.gridy = 0;
 		c.gridheight = 2;
@@ -103,7 +106,6 @@ public class MainGUI extends JFrame {
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				Main.DEBUG("EVENT");
 				if (chatPanel.getSelectedIndex() >= 0 && chats.size() > 0) {
 					ChatThread newChat = chats.get(chatPanel.getSelectedIndex());
 					MainGUI.getInstance().setOptionPanel(newChat.getChatPanelGUI().getOptionPane());
@@ -162,7 +164,6 @@ public class MainGUI extends JFrame {
 				}
 
 			}
-
 		});
 
 		startServerButton.setEnabled(true);
@@ -180,6 +181,7 @@ public class MainGUI extends JFrame {
 
 				portChangeButton.setEnabled(false);
 				startServerButton.setEnabled(false);
+				portTextField.setEditable(false);
 			}
 
 		});

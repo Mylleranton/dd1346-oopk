@@ -491,17 +491,25 @@ public class ChatPanelGUI extends JPanel {
 			} else if (e.getSource() == kickButton) {
 				System.out.println("Kick User");
 				Message kickMessage = new Message(new Message.MessageBuilder().disconnect()
-						.setMessageSender(Main.CURRENT_CHAT_NAME).setText("You have been kicked from the session."));
+						.setMessageSender(Main.CURRENT_CHAT_NAME).setText("---- You have been kicked from the session ----"));
 				if (!userList.isSelectionEmpty()) {
-					String user = userList.getSelectedValuesList().get(0);
-					System.out.println("Kicking user: " + user);
-					chatThread.sendMessageToClient(user, kickMessage);
+					String qualifiedUsername = userList.getSelectedValuesList().get(0);
+					String userID = chatThread.getIDfromQualifiedName(qualifiedUsername);
+					if(userID != null) {
+						System.out.println("Kicking user: " + userID);
+						chatThread.sendMessageToClient(userID, kickMessage);
 
-					Message userHaveBeenKicked = new Message(
-							new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME)
-									.setText("User " + user + " have been kicked from the session"));
-					chatThread.dispatchMessage(userHaveBeenKicked);
-					chatThread.disconnectClient(user);
+						Message userHaveBeenKicked = new Message(
+								new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME)
+										.setText("---- User " + userID + " have been kicked from the session ----"));
+						chatThread.dispatchMessage(userHaveBeenKicked);
+						chatThread.disconnectClient(userID);
+					} 
+					else {
+						System.err.println("Could not find a user with the qualified name " + qualifiedUsername);
+					}
+					
+					
 
 				}
 			}

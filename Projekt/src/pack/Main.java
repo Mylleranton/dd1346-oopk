@@ -31,6 +31,10 @@ public class Main {
 		// System.out.println(p.getParsedMessage().getMessage());
 	}
 
+	/**
+	 * Utility used for displaying DEBUG messages. Prints verbose iff debug_flag = true.
+	 * @param msg - The string to be printed
+	 */
 	public static void DEBUG(String msg) {
 		if (DEBUG_FLAG) {
 			System.out.println("DEBUG: " + msg);
@@ -38,6 +42,8 @@ public class Main {
 	}
 
 	/**
+	 * Called upon server startup. Should run on independent thread, as it will indefinitly listen for new Socket connection
+	 * and handle them appropriatly.
 	 * SHOULD NOT RUN ON SWING THREAD
 	 */
 	public void startServer() {
@@ -49,26 +55,36 @@ public class Main {
 					waitForConnections();
 
 				} catch (EOFException eofe) {
-					Main.DEBUG("Server ended connection");
+					System.err.println("Server ended connection: " + eofe.getMessage());
 				}
 			}
-			// serverSocket.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("Server ended connection: " + e.getMessage());
 		} finally {
 			outgoingConnectionEnabled = false;
+			try {
+				serverSocket.close();
+			} catch (IOException e) {
+				System.err.println("Failed to close server: " + e.getMessage());
+			}
 		}
 	}
 
 	/**
+	 * 
+	 * Called upon serverstart to listen and handle incoming connections
 	 * SHOULD NOT RUN ON SWING THREAD
 	 * 
-	 * @throws IOException
+	 * @throws IOException - forward from serversocket.accept()
 	 */
 	private void waitForConnections() throws IOException {
 		Main.DEBUG("Waiting for connections...");
+		// Accept incoming connections
 		Socket inConn = serverSocket.accept();
+		System.out.println("Incoming connection from " + inConn.getInetAddress().getHostAddress());
+		
 		Object[] options = { "Private", "Multi-part" };
+		// Ask server if private or multi-part chat
 		int response = -1;
 		while ((response != JOptionPane.YES_OPTION) && (response != JOptionPane.NO_OPTION)) {
 			response = JOptionPane.showOptionDialog(MainGUI.getInstance(),
@@ -81,19 +97,23 @@ public class Main {
 			// Add to private chat
 			createNewChat(inConn);
 		} else {
-			// TODO: Add to multi-part chat
+			// Add to multi-part chat
 			addToMultiChat(inConn);
 		}
 
 	}
-
+	/**
+	 * Holder for the singleton instance of Main
+	 * @return
+	 */
 	public static Main getInstance() {
 		return MainHolder.INSTANCE;
 	}
 
 	/**
-	 * Starts a new chat with the ip and port provided SHOULD NOT RUN ON SWING
-	 * THREAD
+	 * Starts a new chat with the ip and port provided 
+	 * as a client
+	 * SHOULD NOT RUN ON SWING THREAD
 	 *
 	 * @param ip
 	 *            - The IP address to connect with
@@ -106,15 +126,16 @@ public class Main {
 		try {
 			connection = new Socket(InetAddress.getByName(ip), Integer.parseUnsignedInt(port));
 		} catch (UnknownHostException e) {
-			System.out.println("The provided IP did not lead anywhere...: " + e.toString());
+			System.err.println("The provided IP did not lead anywhere...: " + e.toString());
 
 		} catch (IOException e) {
-			System.out.println("I/O error on attemted outgoing connection: " + e.toString());
+			System.err.println("I/O error on attemted outgoing connection: " + e.toString());
 
 		} catch (NumberFormatException e) {
-			System.out.println("Port has invalid format: " + port + ": " + e.toString());
+			System.err.println("Port has invalid format: " + port + ": " + e.toString());
 		}
-
+		
+		System.out.println("Successfully connected to host " + ip + ":" + port);
 		return connection;
 
 	}
@@ -135,9 +156,6 @@ public class Main {
 		
 		ClientThread clientThread = new ClientThread(conn, chatThread);
 		clientThread.start();
-
-		//chatThread.addClientThread(clientThread);
-
 		
 
 	}
@@ -163,8 +181,6 @@ public class Main {
 			
 			ClientThread clientThread = new ClientThread(conn, chatThread);
 			clientThread.start();
-			
-			//chatThread.addClientThread(clientThread);
 		} 
 		else {
 			// Find multi-part chat
@@ -176,6 +192,7 @@ public class Main {
 				if (thread.getClients().size() > 1) {
 					Main.DEBUG("There existed one chat with multiple users. Adding to that one.");
 					multiChat = thread;
+					break;
 				}
 			}
 			if (multiChat == null) {
@@ -188,12 +205,17 @@ public class Main {
 							JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 				}
 				multiChat = MainGUI.getInstance().getChatByName((String) answer);
-				assert (multiChat != null) : "ERROR: Could not find multi-chat";
-
+				
+				
+			}
+			
+			if(multiChat == null) {
+				System.err.println("Could not find chosen multi-chat. Reverting to private chat mode");
+				createNewChat(conn);
+				return;
+			} else {
 				ClientThread clientThread = new ClientThread(conn, multiChat);
 				clientThread.start();
-
-				//multiChat.addClientThread(clientThread);
 			}
 
 		}

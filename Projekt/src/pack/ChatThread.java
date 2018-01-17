@@ -10,6 +10,9 @@ import javax.swing.SwingUtilities;
  * 
  * ChatThread is the Thread backend implementation of a ChatPanelGUI that holds a number of
  * clients (ClientThreads) and all in all represents a single chat.
+ * 
+ * On creation of a ChatThread, it will automatically create a ChatPanelGUI connected with it. Then ClientThreads can be
+ * connected to the chat by passing on a ChatThread object on ClientThread creation.
  * @author anton
  *
  */
@@ -152,8 +155,12 @@ public class ChatThread extends Thread {
 		int index = MainGUI.getInstance().getTabbedPane().indexOfComponent(this.getChatPanelGUI());
 		if (index >= 0 && !newName.equalsIgnoreCase("")) {
 			MainGUI.getInstance().getTabbedPane().setTitleAt(index, newName);
+			chatPanel.setName(newName);
 		}
-		chatPanel.getUserList().setListData(getClientDisplayNames());
+	
+		// Display as much information about the connected clients as possible!
+		
+		chatPanel.getUserList().setListData(this.getClientQualifiedNames());
 	}
 	
 	public ArrayList<ClientThread> getClients() {
@@ -170,6 +177,7 @@ public class ChatThread extends Thread {
 		if ( clients.size() >= 1 && chatPanel != null) {
 			chatPanel.getUserList().setListData(getClientDisplayNames());
 		}
+		this.dispatchMessage(new Message(new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME).setText("-- User " + thread.getDisplayName() + " connected. --")));
 		Main.DEBUG("ChatThread now has " + clients.size() + " clients");
 	}
 	
@@ -177,6 +185,7 @@ public class ChatThread extends Thread {
 		this.clients.remove(thread);
 		onNameUpdate();
 		chatPanel.getUserList().setListData(getClientDisplayNames());
+		this.dispatchMessage(new Message(new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME).setText("-- User " + thread.getDisplayName() + " disconnected. --")));
 		Main.DEBUG("ChatThread now has " + clients.size() + " clients");
 	}
 	
@@ -209,6 +218,48 @@ public class ChatThread extends Thread {
 		return names;
 	}
 	
+	/**
+	 * Return a list of all the qualified names of a client. 
+	 * Have the form "displayname (IP)" or "IP"
+	 * @return
+	 */
+	public String[] getClientQualifiedNames() {
+		String[] dispNames = getClientDisplayNames();
+		String[] IDs = getClientIDs();
+		assert(dispNames.length == IDs.length): "Error in clientthreads arraylengths. ID and Names mismatch.";
+		String[] qualifiedNames = new String[IDs.length];
+		for(int i = 0; i < dispNames.length; i++) {
+			if(dispNames[i].equalsIgnoreCase(IDs[i])) {
+				qualifiedNames[i] = IDs[i];
+			} 
+			else {
+				qualifiedNames[i] = dispNames[i].concat(" (" + IDs[i] + ")");
+			}
+		}
+		return qualifiedNames;
+	}
+	
+	/**
+	 * Get client ID from a qualified name
+	 * @param qual - The qualified name
+	 * @return
+	 */
+	public String getIDfromQualifiedName(String qual) {
+		String[] dispNames = getClientDisplayNames();
+		String[] IDs = getClientIDs();
+		for(String ip : IDs) {
+			if(qual.equalsIgnoreCase(ip)) {
+				return ip;
+			}
+		}
+		
+		for(int i = 0; i < IDs.length; i++) {
+			if (qual.startsWith(dispNames[i]) && qual.endsWith("(" + IDs[i] + ")")) {
+				return IDs[i];
+			}
+		}
+		return null;
+	}
 	/**
 	 * Return the clientthread with name name
 	 * @param name

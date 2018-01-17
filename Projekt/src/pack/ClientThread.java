@@ -58,10 +58,14 @@ public class ClientThread extends Thread {
 		chatThread.getChatPanelGUI().displayMessage(message);
 		
 		
-		chatThread.sendMessageToAllButOne(getID(), message);
 		
 		if (message.disconnect()) {
+			// Do not relay the disconnect-tag!
 			chatThread.disconnectClient(this);
+			Message newMessage = new Message(new Message.MessageBuilder().setMessageSender(message.getSender()).setText(message.getMessageText()).setTextColor(message.getTextColor()));
+			chatThread.sendMessageToAllButOne(getID(), newMessage);
+		} else {
+			chatThread.sendMessageToAllButOne(getID(), message);
 		}
 	}
 	
@@ -134,7 +138,7 @@ public class ClientThread extends Thread {
 										Message msg = new MessageParser().parseInputStream(sb.toString());
 										recieveMessage(msg);
 										if (msg.disconnect()) {
-											errorMsg = "Recieved disconnect message...";
+											errorMsg = "Recieved disconnect message.";
 										}
 									}
 									break;
