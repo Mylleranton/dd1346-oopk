@@ -47,7 +47,9 @@ public class MessageParser {
 			}
 		}
 		if (parser.getBodyContent() != null) {
-			String text = parser.getBodyContent();
+			String bodyContent = parser.getBodyContent();
+			String text = bodyContent.substring(6,bodyContent.length()-7);
+			//Main.DEBUG(text);
 			text = text.replaceAll("<b>", "<fetstil>");
 			text = text.replaceAll("</b>", "</fetstil>");
 			text = text.replaceAll("<i>", "<kursiv>");
@@ -75,13 +77,13 @@ public class MessageParser {
 
 	}
 	
-	private Message parseInputStream(String inputString) {
+	public Message parseInputStream(String inputString) {
 		Document doc = null;
 		try {
 			doc = documentBuilder.parse(new InputSource(new StringReader(inputString)));
 			doc.getDocumentElement().normalize();
 		} catch (SAXException | IOException e) {
-			e.printStackTrace();
+			System.out.println("Recieved badly formatted message: " + inputString);
 		}
 		
 		NodeList nodes = doc.getChildNodes();
@@ -121,17 +123,17 @@ public class MessageParser {
 			else if(node.getNodeName().equalsIgnoreCase("disconnect")) {
 				messageBuilder.disconnect();
 			}
-			else if (node.getParentNode() != null) {
-				if (node.getParentNode().getNodeName().equalsIgnoreCase("text")) {
-
-					if (node.getNodeName().equalsIgnoreCase("kursivt")) {
-						messageBuilder.setText(messageBuilder.getText().replace("<kursiv>", "<i>").replace("</kursiv>", "</i>"));
-					}
-					else if (node.getNodeName().equalsIgnoreCase("fetstil")) {
-						messageBuilder.setText(messageBuilder.getText().replace("<fetstil>", "<b>").replace("</fetstil>", "</b>"));
-					}
-				}
-			}
+//			else if (node.getParentNode() != null) {
+//				if (node.getParentNode().getNodeName().equalsIgnoreCase("text")) {
+//
+//					if (node.getNodeName().equalsIgnoreCase("kursivt")) {
+//						//messageBuilder.setText(messageBuilder.getText().replace("<kursiv>", "<i>").replace("</kursiv>", "</i>"));
+//					}
+//					if (node.getNodeName().equalsIgnoreCase("fetstil")) {
+//						//messageBuilder.setText(messageBuilder.getText().replace("<fetstil>", "<b>").replace("</fetstil>", "</b>"));
+//					}
+//				}
+//			}
 			if(node.hasChildNodes()) {
 				buildMessageFromXML(node.getChildNodes());
 			}		
@@ -152,7 +154,7 @@ public class MessageParser {
 		}
 		String retString = sb.toString();
 		if(!html) {
-			retString.substring(retString.indexOf(">"), retString.length()-1-10);
+			//retString.substring(retString.indexOf(">"), retString.length()-1-10);
 		} else {
 			retString = retString.trim();
 		}

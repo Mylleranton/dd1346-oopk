@@ -26,16 +26,20 @@ public class Message {
 		sb.append("<message" + ( MESSAGE_SENDER == null ? ">" : " sender=\"" + MESSAGE_SENDER + "\">"));
 		if (TEXT != null) {
 			sb.append("<text" +  ( TEXT_COLOR == null ? ">" : " color=\"" + TEXT_COLOR + "\">") );
-			sb.append(TEXT);
+			sb.append(TEXT.trim());
 			sb.append("</text>");
 		}
 		if(DISCONNECT) {
 			sb.append("<disconnect/>");
 		}
 		
+		//sb.append("</message>" + System.lineSeparator());
 		sb.append("</message>");
 		
 		return sb.toString();
+	}
+	public String getSender() {
+		return MESSAGE_SENDER == null ? "" : MESSAGE_SENDER;
 	}
 	
 	public String getHTMLRepresentation() {
@@ -91,6 +95,10 @@ public class Message {
 			return this;
 		}
 	}
+
+
+
+	
 	
 	
 	

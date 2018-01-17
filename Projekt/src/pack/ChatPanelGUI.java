@@ -25,7 +25,14 @@ import javax.swing.event.ListSelectionListener;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
-
+/**
+ * 
+ * @author anton
+ *
+ * Each ChatThread has a backend ChatPanelGUI which is the GUI to that chat. 
+ * Displays all information and handles all graphical control of the chat.
+ *
+ */
 public class ChatPanelGUI extends JPanel {
 	
 	private JTextPane chatDisplayPane;
@@ -44,6 +51,11 @@ public class ChatPanelGUI extends JPanel {
 	
 	private ChatThread chatThread;
 	
+	/**
+	 * Initializes a new chatpanelgui with an associated name and chatthread
+	 * @param name The new name of the chat
+	 * @param chat The associated ChatThread
+	 */
 	public ChatPanelGUI(String name, ChatThread chat) {
 		this.setName(name);
 		this.chatThread = chat;
@@ -52,6 +64,9 @@ public class ChatPanelGUI extends JPanel {
 		
 	}
 	
+	/**
+	 * Initializes the GUI of the instance
+	 */
 	private void initializeGUI() {
 		
 		setLayout(new GridBagLayout());
@@ -125,6 +140,9 @@ public class ChatPanelGUI extends JPanel {
 		
 	}
 	
+	/**
+	 * Sets up the OptionPane of the GUI
+	 */
 	private void setupOptionPane() {
 		optionPane = new JPanel();
 		optionPane.setLayout(new GridBagLayout());
@@ -166,17 +184,46 @@ public class ChatPanelGUI extends JPanel {
 		endChatButton.addActionListener(opeh);
 	}
 	
+	/**
+	 * Returns the associated optionpane of the GUI
+	 * @return The associated OptionPane
+	 */
 	public JPanel getOptionPane() {
 		return this.optionPane;
 	}
+	
+	/**
+	 * 
+	 * @return Returns the JList<String> containing all users connected to the current chat
+	 */
 	public JList<String> getUserList() {
 		return this.userList;
 	}
 	
+	/**
+	 * Displays an incoming message to the chat GUI
+	 * @param msg - The message to be displayed
+	 */
+	public void displayMessage(Message msg) {
+		HTMLParser displayParser;
+		try {
+			displayParser = new HTMLParser(chatDisplayPane.getText());
+		} catch (SAXException e1) {
+			System.out.println("Error in HTML-formatting");
+			e1.printStackTrace();
+			return;
+		}
+		displayParser.appendToBodyNode(msg.getHTMLRepresentation());
+		chatDisplayPane.setText(displayParser.getHTMLText());
+	}
+	
 
 	
-	/*
-	 * Text format button eventhandler
+	/**
+	 * ActionListener that handles the style formatting of the chat. Converts text to and from the XML-representation of the Message instance to the 
+	 * HTML representation of the GUI-display. 
+	 * 
+	 * Listens to the Style and Formatting buttons of the current GUI.
 	 */
 	private class TextStyleEventHandler implements ActionListener {
 
@@ -210,6 +257,14 @@ public class ChatPanelGUI extends JPanel {
 				
 			}
 		}
+		
+		/**
+		 * Utility method for checking a HTML-representation and inserting the appropiate tags for whichever style was selected for the 
+		 * highlighted text.
+		 * 
+		 * @param tag The tag to be inserted
+		 * @param p The HTMLParser instance that parsed the chat display.
+		 */
 		private void checkAndInsertTag(String tag, HTMLParser p) {
 			try{
 				int start = chatTypingPane.getSelectionStart()-1;
@@ -314,11 +369,10 @@ public class ChatPanelGUI extends JPanel {
 		}
 		/**
 		 * Calculates the number of tag-characters that differ between the two html-strings
-		 * @param plain
-		 * @param html
-		 * @param startIndex
-		 * @param endIndex
-		 * @return
+		 * @param plain - The plain non-formatted text representation
+		 * @param html - The HTML representation of the text
+		 * @param endIndex - The index to end at
+		 * @return The number of characters differing the plain and html represenation
 		 */
 		private int preceededTagIndices(String plain, String html, int endIndex) {
 			
@@ -350,6 +404,11 @@ public class ChatPanelGUI extends JPanel {
 		
 	}
 	
+	/**
+	 * EventHandler for the Send-button. Handles the send procedeure and produces a Message-instance to be broadcasted.
+	 * @author anton
+	 *
+	 */
 	private class SendMessageEventHandler implements ActionListener {
 
 		@Override
@@ -370,20 +429,31 @@ public class ChatPanelGUI extends JPanel {
 				//System.out.println(msg.getHTMLRepresentation());
 				displayParser.appendToBodyNode(msg.getHTMLRepresentation());
 				chatDisplayPane.setText(displayParser.getHTMLText());
-				Main.DEBUG(chatDisplayPane.getText());
+				//Main.DEBUG(chatDisplayPane.getText());
 				chatTypingPane.setText("");
+				
+				chatThread.dispatchMessage(msg);
+			
 			}
 		}
 	}
 	
+	/**
+	 * 
+	 * OptionPanel Event-Handler that handles input from the OptionPane, that is, removing users/clients and closing down chats.
+	 * @author anton
+	 *
+	 */
 	private class OptionPaneEventHandler implements ActionListener, ListSelectionListener, FocusListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			// If we want to end the current chat, close it and send a message to all connected users.
 			if(e.getSource() == endChatButton) {
 				System.out.println("End Chat");
 				Message disconnectMessage = new Message(new Message.MessageBuilder().disconnect().setMessageSender(Main.CURRENT_CHAT_NAME));
 				chatThread.dispatchMessage(disconnectMessage);
+				chatThread.disconnectAll();
 				
 			} 
 			else if (e.getSource() == kickButton) {
@@ -398,6 +468,8 @@ public class ChatPanelGUI extends JPanel {
 					Message userHaveBeenKicked = new Message(
 							new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME).setText("User " + user + " have been kicked from the session"));
 					chatThread.dispatchMessage(userHaveBeenKicked);
+					chatThread.disconnecClient(user);
+						
 				}
 			}
 		}

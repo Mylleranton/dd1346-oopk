@@ -2,6 +2,7 @@ package pack;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -17,6 +18,9 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -24,11 +28,15 @@ import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
@@ -36,6 +44,15 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.MaskFormatter;
 import javax.swing.text.NumberFormatter;
 
+import pack.Main.MainHolder;
+/**
+ * @author anton
+ *
+ * This class holds the main JFrame and acts as container for all 
+ * chats available, represended by one ChatPanelGUI.
+ * 
+ * Singleton.
+ */
 public class MainGUI extends JFrame {
 	
 	public static int WIDTH = 800;
@@ -51,9 +68,10 @@ public class MainGUI extends JFrame {
 		private static final MainGUI INSTANCE = new MainGUI();
 	}
 	
+	/**
+	 * Initialize graphics
+	 */
 	private MainGUI() {
-		
-		
 		setPreferredSize(new Dimension(WIDTH, HEIGHT));
 		
 		try {
@@ -79,9 +97,6 @@ public class MainGUI extends JFrame {
 		optionPanel.setBackground(Color.orange);
 		
 		setupButtonPanel();
-		HACKACHATPANEL("1");
-		HACKACHATPANEL("2");
-
 		
 		GridBagConstraints c = new GridBagConstraints();
 		c.fill = GridBagConstraints.BOTH;
@@ -116,6 +131,9 @@ public class MainGUI extends JFrame {
 		setVisible(true);
 	}
 	
+	/**
+	 * Sets up the button-panel with user-changable program parameters
+	 */
 	private void setupButtonPanel(){
 		GridBagConstraints c = new GridBagConstraints();
 
@@ -129,6 +147,7 @@ public class MainGUI extends JFrame {
 		JLabel portLabelName = new JLabel("Port: ");
 		JTextField portTextField = new JTextField(new Integer(Main.CURRENT_PORT).toString());
 		JButton portChangeButton = new JButton("Ändra");
+		JButton startServerButton = new JButton("Starta server");
 		
 		portTextField.setEditable(false);
 		portTextField.setEnabled(true);
@@ -160,6 +179,25 @@ public class MainGUI extends JFrame {
 			
 		});
 		
+		startServerButton.setEnabled(true);
+		startServerButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						Main.getInstance().startServer();
+					}
+					
+				}).start();
+				
+				portChangeButton.setEnabled(false);
+				startServerButton.setEnabled(false);
+			}
+			
+		});
+		
 		c.gridx = 0; c.gridy = 0;
 		c.anchor = GridBagConstraints.NORTHWEST;
 		c.insets = new Insets(5,5,5,5);
@@ -179,9 +217,14 @@ public class MainGUI extends JFrame {
 		c.gridx = 1;
 		buttonPanel.add(portTextField, c);
 		
+		c.gridx = 0; c.gridwidth = 2;
+		c.gridy = 4;
+		buttonPanel.add(startServerButton, c);
+		c.gridwidth = 1;
+		
 		// Separator
 		cSep.fill = GridBagConstraints.HORIZONTAL;
-		cSep.gridy = 4; cSep.gridwidth = 2;
+		cSep.gridy = 5; cSep.gridwidth = 2;
 		cSep.insets = new Insets(5,0,5,0);
 		buttonPanel.add(new JSeparator(SwingConstants.HORIZONTAL),cSep);
 		
@@ -210,14 +253,14 @@ public class MainGUI extends JFrame {
 			}
 		});
 		
-		c.gridx = 0; c.gridy = 5;
+		c.gridx = 0; c.gridy = 6;
 		buttonPanel.add(nameLabelName, c);
-		c.gridx = 1; c.gridy = 6;
+		c.gridx = 1; c.gridy = 7;
 		buttonPanel.add(nameTextField, c);
 		c.gridx = 0;
 		buttonPanel.add(nameChangeButton, c);
 		
-		cSep.gridy = 7;
+		cSep.gridy = 8;
 		buttonPanel.add(new JSeparator(SwingConstants.HORIZONTAL),cSep);
 		
 		// Connect buttons and labels
@@ -230,40 +273,110 @@ public class MainGUI extends JFrame {
 		JTextField connectIpField = new JTextField(25);
 		JTextField connectPortField = new JTextField(25);
 		
+		JProgressBar progressBar = new JProgressBar();
+		progressBar.setIndeterminate(true);
+		progressBar.setVisible(false);
+		
+		connectButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (!connectIpField.getText().matches("([0-9]{1,3})[.]([0-9]{1,3})[.]([0-9]{1,3})[.]([0-9]{1,3})")) {
+					connectIpField.setText("");
+					JOptionPane.showMessageDialog(MainGUI.getInstance(), "IP-address is not valid. Must have the format XXX.XXX.XXX.XXX", "Invalid IP", JOptionPane.ERROR_MESSAGE);
+				}
+				else if (!connectPortField.getText().matches("[1-9]\\d{2,5}")) {
+					connectPortField.setText("");
+					JOptionPane.showMessageDialog(MainGUI.getInstance(), "Port is not valid. Must be in range 100-99999", "Invalid Port", JOptionPane.ERROR_MESSAGE);
+				}
+				else {
+					progressBar.setVisible(true);
+					connectButton.setEnabled(false);
+					
+					SwingWorker<Socket, Void> worker = new SwingWorker<Socket, Void>() {
+
+						@Override
+						protected Socket doInBackground() throws Exception {
+							return Main.getInstance().connectToHost(connectIpField.getText(), connectPortField.getText());
+						}
+						
+						@Override
+						protected void done() {
+							try {
+								if(get() != null) {
+									Main.getInstance().createNewChat(get());
+								} 
+								else {
+									System.out.println("Connection error");
+									JOptionPane.showMessageDialog(MainGUI.getInstance(), "Connection Error, please see logs.", "Connection Error", JOptionPane.ERROR_MESSAGE);
+									progressBar.setVisible(false);
+									connectButton.setEnabled(true);
+								}
+							} catch (InterruptedException | ExecutionException e) {
+								e.printStackTrace();
+							}
+							progressBar.setVisible(false);
+							connectButton.setEnabled(true);
+						}
+						
+					};
+					worker.execute();
+					Timer timer = new Timer((60*1000), new ActionListener() {
+
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							if(!worker.isDone()) {
+								System.out.println("Connection timeout...");
+								JOptionPane.showMessageDialog(MainGUI.getInstance(), "Outgoing connection timed out.", "Connection Time-out", JOptionPane.INFORMATION_MESSAGE);
+								progressBar.setVisible(false);
+								connectButton.setEnabled(true);
+							}
+						}
+					});
+					timer.setRepeats(false);
+					timer.start();
+					
+					
+					
+	
+				}
+				
+			}
+			
+		});
+		
 		
 		c.gridx = 0; c.gridwidth = 2;
-		c.gridy = 8;
+		c.gridy = 9;
 		buttonPanel.add(connectLabel, c);
 		
 		c.gridwidth = 1;
-		c.gridx = 0; c.gridy = 9;
+		c.gridx = 0; c.gridy = 10;
 		buttonPanel.add(ipLabel, c);
 		
-		c.gridx = 1; c.gridy = 9;
+		c.gridx = 1; c.gridy = 10;
 		buttonPanel.add(connectIpField, c);
 		
-		c.gridx = 0; c.gridy = 10;
+		c.gridx = 0; c.gridy = 11;
 		buttonPanel.add(portLabel, c);
 		
-		c.gridx = 1; c.gridy = 10;
+		c.gridx = 1; c.gridy = 11;
 		buttonPanel.add(connectPortField, c);
 		
-		c.gridx = 0; c.gridy = 11;
+		c.gridx = 0; c.gridy = 12;
 		buttonPanel.add(connectButton, c);
 		
-		c.gridy = 12; c.weighty = 1;
+		c.gridx = 1;
+		buttonPanel.add(progressBar, c);
+		
+		c.gridy = 13; c.weighty = 1;
 		c.insets = new Insets(0,0,0,0);
 		buttonPanel.add(new JLabel(), c);
 		
 	}
 	
-	public void HACKACHATPANEL(String in) {
-		ChatThread t = new ChatThread(in);
-		chats.add(t);
-	}
 	
-	
-	/*
+	/**
 	 * Return the current local IP of the computer
 	 */
 	private InetAddress getIp(){
@@ -275,26 +388,17 @@ public class MainGUI extends JFrame {
 		return null;
 	}
 	/**
-	 * Called on creation of a ChatThread
-	 * @param gui
+	 * Adds a ChatPanelGUI to the server. Called on creation of a ChatThread.
+	 * @param gui - the ChatPanelGUI instance to be added
 	 */
 	public void addChatPanel(ChatPanelGUI gui){
 		chatPanel.add(gui.getName(), gui);
 	}
 	
-	public void setOptionPanel(JPanel optionPanel) {
-		this.optionPanel.removeAll();
-		this.optionPanel.validate();
-		GridBagConstraints c = new GridBagConstraints();
-		c.fill = GridBagConstraints.BOTH;
-		c.weightx = 1; c.weighty = 1;
-		c.gridx = 0; c.gridy = 0;
-		
-		this.optionPanel.add(optionPanel, c);
-		optionPanel.setVisible(true);
-		Main.DEBUG("OptionPane changed with tab changed");
-	}
-	
+	/**
+	 * Removes a chat panel without ending the internet connectivity from the server
+	 * @param chat - the chatthread to remove
+	 */
 	public void removeChatPanel(ChatThread chat) {
 		System.out.println("Removing tab " + chat.getChatPanelGUI().getName());
 		chats.remove(chat);
@@ -307,9 +411,66 @@ public class MainGUI extends JFrame {
 		}
 	}
 	
+	/**
+	 * Sets the current optionPanel when switching chats
+	 * @param optionPanel - the optionpanel to set active
+	 */
+	public void setOptionPanel(JPanel optionPanel) {
+		this.optionPanel.removeAll();
+		this.optionPanel.validate();
+		GridBagConstraints c = new GridBagConstraints();
+		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1; c.weighty = 1;
+		c.gridx = 0; c.gridy = 0;
+		
+		this.optionPanel.add(optionPanel, c);
+		optionPanel.setVisible(true);
+		Main.DEBUG("OptionPane changed with tab changed");
+	}
+
 	
+	/**
+	 * Returns the names of the current chatthreads
+	 * @return
+	 */
+	public String[] getChatNames() {
+		ArrayList<String> strs = new ArrayList<String>();
+		for (ChatThread th : chats) {
+			strs.add(th.getChatPanelGUI().getName());
+		}
+		return (String[]) strs.toArray();
+	}
+	
+	/**
+	 * Returns the ChatThread with provided name if it exists, otherwise it returns null.
+	 * @param name
+	 * @return
+	 */
+	public ChatThread getChatByName(String name) {
+		ChatThread retThread = null;
+		for (ChatThread th : chats) {
+			if (th.getChatPanelGUI().getName().equalsIgnoreCase(name)) {
+				retThread = th;
+			}
+		}
+		return retThread;
+	}
+	
+	/**
+	 * Singleton instance of MainGUI
+	 * @return the instance
+	 */
 	public static MainGUI getInstance() {
 		return MainGUIHolder.INSTANCE;
 	}
+
+	public ArrayList<ChatThread> getChats() {
+		return chats;
+	}
+	
+	public JTabbedPane getTabbedPane() {
+		return this.chatPanel;
+	}
+	
 
 }
