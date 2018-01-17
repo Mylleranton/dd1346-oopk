@@ -87,6 +87,16 @@ public class ClientThread extends Thread {
 			e.printStackTrace();
 		}
 		this.ID = socket.getInetAddress().getHostAddress();
+		int i = 0;
+		for (String s : chatThread.getClientIDs()) {
+			if (s.equalsIgnoreCase(ID)) {
+				i++;
+			}
+		}
+		if (i > 1) {
+			this.ID = ID.concat("(" + i + ")");
+		}
+		
 		Main.DEBUG("Created ClientThread with ID " + ID);
 		runClientThread();
 	}

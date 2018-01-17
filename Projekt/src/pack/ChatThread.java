@@ -136,10 +136,12 @@ public class ChatThread extends Thread {
 	
 	public void addClientThread(ClientThread thread) {
 		this.clients.add(thread);
+		onNameUpdate();
 	}
 	
 	public void removeClientThread(ClientThread thread) {
 		this.clients.remove(thread);
+		onNameUpdate();
 	}
 	
 	public ChatPanelGUI getChatPanelGUI() {

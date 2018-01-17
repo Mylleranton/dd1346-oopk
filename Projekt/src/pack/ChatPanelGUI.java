@@ -18,191 +18,212 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+
 /**
- * 
+ *
  * @author anton
  *
- * Each ChatThread has a backend ChatPanelGUI which is the GUI to that chat. 
- * Displays all information and handles all graphical control of the chat.
+ *         Each ChatThread has a backend ChatPanelGUI which is the GUI to that
+ *         chat. Displays all information and handles all graphical control of
+ *         the chat.
  *
  */
 public class ChatPanelGUI extends JPanel {
-	
+
 	private JTextPane chatDisplayPane;
 	private JTextPane chatTypingPane;
 	private JPanel optionPane;
 	private JList<String> userList;
-	
+
 	JButton italicsButton;
 	JButton boldButton;
 	JButton colorButton;
-	
+
 	JButton chatSendButton;
-	
+
 	JButton endChatButton;
 	JButton kickButton;
-	
+
 	private ChatThread chatThread;
-	
+
 	/**
 	 * Initializes a new chatpanelgui with an associated name and chatthread
-	 * @param name The new name of the chat
-	 * @param chat The associated ChatThread
+	 * 
+	 * @param name
+	 *            The new name of the chat
+	 * @param chat
+	 *            The associated ChatThread
 	 */
 	public ChatPanelGUI(String name, ChatThread chat) {
-		this.setName(name);
-		this.chatThread = chat;
+		setName(name);
+		chatThread = chat;
 		initializeGUI();
 		setupOptionPane();
-		
 	}
-	
+
 	/**
 	 * Initializes the GUI of the instance
 	 */
 	private void initializeGUI() {
-		
+
 		setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		c.fill = GridBagConstraints.BOTH;
-		c.weightx = 1; c.weighty = 1;
-		c.insets = new Insets(5,5,5,5);
-	
+		c.weightx = 1;
+		c.weighty = 1;
+		c.insets = new Insets(5, 5, 5, 5);
+
 		// Chat Display Pane in ScrollPane
 		chatDisplayPane = new JTextPane();
 		chatDisplayPane.setEditable(false);
 		chatDisplayPane.setContentType("text/html");
 		chatDisplayPane.setText("<p></p>");
-		
-		JScrollPane scrollPaneDisplay = new JScrollPane(chatDisplayPane, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		
-		c.gridx = 0; c.gridy = 0;
+
+		JScrollPane scrollPaneDisplay = new JScrollPane(chatDisplayPane,
+				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+		c.gridx = 0;
+		c.gridy = 0;
 		c.gridwidth = 4;
 		add(scrollPaneDisplay, c);
 		c.gridwidth = 1;
-		
+
 		// Separator
 		GridBagConstraints cSep = new GridBagConstraints();
 		cSep.fill = GridBagConstraints.BOTH;
-		cSep.gridy = 1; cSep.gridwidth = 4;
-		cSep.insets = new Insets(10,0,10,0);
+		cSep.gridy = 1;
+		cSep.gridwidth = 4;
+		cSep.insets = new Insets(10, 0, 10, 0);
 		add(new JSeparator(SwingConstants.HORIZONTAL), cSep);
-		
+
 		// text formatting buttons and handler
 		TextStyleEventHandler tsEventHandler = new TextStyleEventHandler();
 		italicsButton = new JButton("i");
 		italicsButton.addActionListener(tsEventHandler);
-		
+
 		boldButton = new JButton("B");
 		boldButton.addActionListener(tsEventHandler);
-		
+
 		colorButton = new JButton("Färg");
 		colorButton.addActionListener(tsEventHandler);
-		
-		c.gridy = 2; c.gridx = 0;
-		c.weightx = 0; c.weighty = 0;
-		add(boldButton,c);
-		
+
+		c.gridy = 2;
+		c.gridx = 0;
+		c.weightx = 0;
+		c.weighty = 0;
+		add(boldButton, c);
+
 		c.gridx = 1;
-		add(italicsButton,c);
-		
+		add(italicsButton, c);
+
 		c.gridx = 2;
-		add(colorButton,c);
-		
+		add(colorButton, c);
+
 		// Input pane within scrollpane
 		chatTypingPane = new JTextPane();
 		chatTypingPane.setContentType("text/html");
-		
-		chatTypingPane.setText("Hejsan, lite <b>bold</b> och lite <i>sad</i> sådärja.");
-		chatTypingPane.setPreferredSize(new Dimension((int) 0.6*MainGUI.WIDTH, (int) 0.2*HEIGHT));
 
-		JScrollPane scrollPane = new JScrollPane(chatTypingPane, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		scrollPane.setPreferredSize(new Dimension((int) 0.6*MainGUI.WIDTH, (int) 0.3*HEIGHT));
-		
-		c.weighty = 0.5; c.weightx = 1;
-		c.gridy = 3; c.gridx = 0;
+		// NOTE: THE INITIAL TEXT MUST BE NON_EMPTY IN ORDER FOR THE HTML-FORMATTING TO BE CORRECT
+		chatTypingPane.setText("--");
+		chatTypingPane.setPreferredSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.2 * HEIGHT));
+
+		JScrollPane scrollPane = new JScrollPane(chatTypingPane, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.setPreferredSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.3 * HEIGHT));
+
+		c.weighty = 0.5;
+		c.weightx = 1;
+		c.gridy = 3;
+		c.gridx = 0;
 		c.gridwidth = 3;
-		add(scrollPane,c);
+		add(scrollPane, c);
 		c.gridwidth = 1;
-		
+
 		chatSendButton = new JButton("Skicka");
-		c.weightx = 0; c.weighty = 0;
+		c.weightx = 0;
+		c.weighty = 0;
 		c.gridx = 3;
-		add(chatSendButton,c);
+		add(chatSendButton, c);
 		chatSendButton.addActionListener(new SendMessageEventHandler());
-		
+
 	}
-	
+
 	/**
 	 * Sets up the OptionPane of the GUI
 	 */
 	private void setupOptionPane() {
 		optionPane = new JPanel();
 		optionPane.setLayout(new GridBagLayout());
-		optionPane.setPreferredSize(new Dimension((int) (0.4*MainGUI.WIDTH), (int) (0.4*MainGUI.HEIGHT)));
-		
+		optionPane.setPreferredSize(new Dimension((int) (0.4 * MainGUI.WIDTH), (int) (0.4 * MainGUI.HEIGHT)));
+
 		kickButton = new JButton("Koppla ned användare");
 		kickButton.setEnabled(false);
 		endChatButton = new JButton("Avsluta chatt");
-		
-		userList = new JList<String>(); 
+
+		userList = new JList<String>();
 		userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		userList.setLayoutOrientation(JList.VERTICAL);
 		userList.setVisibleRowCount(-1);
 		JScrollPane listScroller = new JScrollPane(userList);
-		listScroller.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-		
+		listScroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+
 		GridBagConstraints c = new GridBagConstraints();
-		c.insets = new Insets(5,5,5,5);
+		c.insets = new Insets(5, 5, 5, 5);
 		c.anchor = GridBagConstraints.NORTHWEST;
-		c.weightx = 1; c.weighty = 1;
+		c.weightx = 1;
+		c.weighty = 1;
 		c.fill = GridBagConstraints.BOTH;
-		
-		c.gridx = 0; c.gridy = 0;
+
+		c.gridx = 0;
+		c.gridy = 0;
 		c.gridheight = 2;
 		optionPane.add(listScroller, c);
-		
+
 		c.gridheight = 1;
 		c.gridx = 1;
 		optionPane.add(kickButton, c);
-		
+
 		c.gridy = 1;
 		optionPane.add(endChatButton, c);
 		optionPane.setVisible(true);
-		
+
 		OptionPaneEventHandler opeh = new OptionPaneEventHandler();
 		kickButton.addActionListener(opeh);
 		userList.addFocusListener(opeh);
 		userList.addListSelectionListener(opeh);
 		endChatButton.addActionListener(opeh);
 	}
-	
+
 	/**
 	 * Returns the associated optionpane of the GUI
+	 * 
 	 * @return The associated OptionPane
 	 */
 	public JPanel getOptionPane() {
-		return this.optionPane;
+		return optionPane;
 	}
-	
+
 	/**
-	 * 
-	 * @return Returns the JList<String> containing all users connected to the current chat
+	 *
+	 * @return Returns the JList<String> containing all users connected to the
+	 *         current chat
 	 */
 	public JList<String> getUserList() {
-		return this.userList;
+		return userList;
 	}
-	
+
 	/**
 	 * Displays an incoming message to the chat GUI
-	 * @param msg - The message to be displayed
+	 * 
+	 * @param msg
+	 *            - The message to be displayed
 	 */
 	public void displayMessage(Message msg) {
 		HTMLParser displayParser;
@@ -216,13 +237,12 @@ public class ChatPanelGUI extends JPanel {
 		displayParser.appendToBodyNode(msg.getHTMLRepresentation());
 		chatDisplayPane.setText(displayParser.getHTMLText());
 	}
-	
 
-	
 	/**
-	 * ActionListener that handles the style formatting of the chat. Converts text to and from the XML-representation of the Message instance to the 
-	 * HTML representation of the GUI-display. 
-	 * 
+	 * ActionListener that handles the style formatting of the chat. Converts
+	 * text to and from the XML-representation of the Message instance to the
+	 * HTML representation of the GUI-display.
+	 *
 	 * Listens to the Style and Formatting buttons of the current GUI.
 	 */
 	private class TextStyleEventHandler implements ActionListener {
@@ -240,172 +260,181 @@ public class ChatPanelGUI extends JPanel {
 
 			if (e.getSource() == boldButton) {
 				checkAndInsertTag("b", p);
-			}
-			else if (e.getSource() == italicsButton) {
+			} else if (e.getSource() == italicsButton) {
 				checkAndInsertTag("i", p);
-			}
-			else if (e.getSource() == colorButton) {
+			} else if (e.getSource() == colorButton) {
 				Color col = JColorChooser.showDialog(MainGUI.getInstance(), "Välj chattfärg", Color.BLACK);
 				Main.DEBUG("Valde färg " + col);
 				if (col != null) {
-					String hex = String.format("#%02X%02X%02X", col.getRed(), col.getGreen(), col.getBlue());  
+					String hex = String.format("#%02X%02X%02X", col.getRed(), col.getGreen(), col.getBlue());
 					Main.DEBUG(hex);
 					((Element) p.getFontNode()).setAttribute("color", hex);
 					Main.DEBUG(p.getHTMLText());
 					chatTypingPane.setText(p.getHTMLText());
 				}
-				
+
 			}
 		}
-		
+
 		/**
-		 * Utility method for checking a HTML-representation and inserting the appropiate tags for whichever style was selected for the 
-		 * highlighted text.
-		 * 
-		 * @param tag The tag to be inserted
-		 * @param p The HTMLParser instance that parsed the chat display.
+		 * Utility method for checking a HTML-representation and inserting the
+		 * appropiate tags for whichever style was selected for the highlighted
+		 * text.
+		 *
+		 * @param tag
+		 *            The tag to be inserted
+		 * @param p
+		 *            The HTMLParser instance that parsed the chat display.
 		 */
 		private void checkAndInsertTag(String tag, HTMLParser p) {
-			try{
-				int start = chatTypingPane.getSelectionStart()-1;
-				int end = chatTypingPane.getSelectionEnd()-1;
+			try {
+				int start = chatTypingPane.getSelectionStart() - 1;
+				int end = chatTypingPane.getSelectionEnd() - 1;
 				int offsetEnd = preceededTagIndices(p.getPlainBodyContent(), p.getBodyContent(), end);
-				int offsetStart = preceededTagIndices(p.getPlainBodyContent(), p.getBodyContent(), start-end>3 ? start+3 : start);
-				
-				if((start+offsetStart < 0) || (end+offsetEnd < 0)) return;
-				
+				int offsetStart = preceededTagIndices(p.getPlainBodyContent(), p.getBodyContent(),
+						(start - end) > 3 ? start + 3 : start);
+
+				if (((start + offsetStart) < 0) || ((end + offsetEnd) < 0)) {
+					return;
+				}
+
 				String openTag = "<" + tag + ">";
 				String closeTag = "</" + tag + ">";
 				String bodyContent = p.getBodyContent();
 				Main.DEBUG(bodyContent);
-				Main.DEBUG("offsetStart: " + (offsetStart + start) + " offsetEnd: " + (offsetEnd+ end));
-				Main.DEBUG("Selected word: " + bodyContent.substring(start+offsetStart, end+offsetEnd));
-				
-				// Selected word starts at index start+offset and ends at end+offset
+				Main.DEBUG("offsetStart: " + (offsetStart + start) + " offsetEnd: " + (offsetEnd + end));
+				Main.DEBUG("Selected word: " + bodyContent.substring(start + offsetStart, end + offsetEnd));
+
+				// Selected word starts at index start+offset and ends at
+				// end+offset
 				// first end tag after word, first start tag before word
-				int prevOpenTag = bodyContent.substring(0, start+offsetStart > 0 ? start+offsetStart : 3).lastIndexOf(openTag);
-				int prevCloseTag = bodyContent.substring(0, start+offsetStart).lastIndexOf(closeTag);
-				int postCloseTag = bodyContent.indexOf(closeTag, end+offsetEnd);
-				int postOpenTag = bodyContent.indexOf(openTag, end+offsetEnd);
+				int prevOpenTag = bodyContent.substring(0, (start + offsetStart) > 0 ? start + offsetStart : 3)
+						.lastIndexOf(openTag);
+				int prevCloseTag = bodyContent.substring(0, start + offsetStart).lastIndexOf(closeTag);
+				int postCloseTag = bodyContent.indexOf(closeTag, end + offsetEnd);
+				int postOpenTag = bodyContent.indexOf(openTag, end + offsetEnd);
 				Main.DEBUG(prevOpenTag + " " + prevCloseTag + " " + postOpenTag + " " + postCloseTag + " ");
-				
-				//Selection size zero
-				if(end-start <= 0){
+
+				// Selection size zero
+				if ((end - start) <= 0) {
 					// do nothing
 				}
 				// First check if word is contained within actual tags already
-				else if((prevOpenTag > prevCloseTag && (postOpenTag > 0 ? postCloseTag < postOpenTag : true)) 
-						&& postCloseTag > prevOpenTag) {
+				else if (((prevOpenTag > prevCloseTag) && (postOpenTag > 0 ? postCloseTag < postOpenTag : true))
+						&& (postCloseTag > prevOpenTag)) {
 					Main.DEBUG("Word contained within same tags");
-					bodyContent = bodyContent.substring(0, start+offsetStart) 
-							+ closeTag
-							+ bodyContent.substring(start+offsetStart, end+offsetEnd) 
-							+ openTag
-							+ bodyContent.substring(end+offsetEnd);
-				}	
-				else if (start+offsetStart-4 > 0 && end+offsetEnd+5 <= bodyContent.length()-1) {
+					bodyContent = bodyContent.substring(0, start + offsetStart) + closeTag
+							+ bodyContent.substring(start + offsetStart, end + offsetEnd) + openTag
+							+ bodyContent.substring(end + offsetEnd);
+				} else if ((((start + offsetStart) - 4) > 0) && ((end + offsetEnd + 5) <= (bodyContent.length() - 1))) {
 					// Case "<b>TEXT</b>"
-					if (bodyContent.substring(start+offsetStart-3, end+offsetEnd+4).trim().startsWith(openTag)
-							&& bodyContent.substring(start+offsetStart-3, end+offsetEnd+4).trim().endsWith(closeTag)) {
+					if (bodyContent.substring((start + offsetStart) - 3, end + offsetEnd + 4).trim().startsWith(openTag)
+							&& bodyContent.substring((start + offsetStart) - 3, end + offsetEnd + 4).trim()
+									.endsWith(closeTag)) {
 						Main.DEBUG("Word has form <b>TEXT</b>");
-						bodyContent = bodyContent.substring(0, start+offsetStart-3) 
-								+ bodyContent.substring(start+offsetStart, end+offsetEnd) 
-								+ bodyContent.substring(end+offsetEnd+4);
-					} 
+						bodyContent = bodyContent.substring(0, (start + offsetStart) - 3)
+								+ bodyContent.substring(start + offsetStart, end + offsetEnd)
+								+ bodyContent.substring(end + offsetEnd + 4);
+					}
 					// Case " <b>TEXT</b> "
-					else if (bodyContent.substring(start+offsetStart-4, end+offsetEnd+5).trim().startsWith(openTag)
-							&& bodyContent.substring(start+offsetStart-4, end+offsetEnd+5).trim().endsWith(closeTag)) {
+					else if (bodyContent.substring((start + offsetStart) - 4, end + offsetEnd + 5).trim()
+							.startsWith(openTag)
+							&& bodyContent.substring((start + offsetStart) - 4, end + offsetEnd + 5).trim()
+									.endsWith(closeTag)) {
 						Main.DEBUG("Word has form '<b>TEXT</b> '");
-						bodyContent = bodyContent.substring(0, start+offsetStart-3) 
-								+ bodyContent.substring(start+offsetStart, end+offsetEnd) 
-								+ bodyContent.substring(end+offsetEnd+4);
-					} 
+						bodyContent = bodyContent.substring(0, (start + offsetStart) - 3)
+								+ bodyContent.substring(start + offsetStart, end + offsetEnd)
+								+ bodyContent.substring(end + offsetEnd + 4);
+					}
 					// Case "blabla... TEXT ...blabla..."
 					else {
 						Main.DEBUG("Selection within text");
-						bodyContent = bodyContent.substring(0, start+offsetStart) 
-								+ openTag
-								+ bodyContent.substring(start+offsetStart, end+offsetEnd) 
-								+ closeTag
-								+ bodyContent.substring(end+offsetEnd);
+						bodyContent = bodyContent.substring(0, start + offsetStart) + openTag
+								+ bodyContent.substring(start + offsetStart, end + offsetEnd) + closeTag
+								+ bodyContent.substring(end + offsetEnd);
 					}
 				}
 				// Case "TEXT ...blabla.." or ".... blabla... TEXT"
 				else {
 					Main.DEBUG("Selection within text at start or end");
-					bodyContent = bodyContent.substring(0, start+offsetStart) 
-							+ openTag
-							+ bodyContent.substring(start+offsetStart, end+offsetEnd) 
-							+ closeTag
-							+ bodyContent.substring(end+offsetEnd);
+					bodyContent = bodyContent.substring(0, start + offsetStart) + openTag
+							+ bodyContent.substring(start + offsetStart, end + offsetEnd) + closeTag
+							+ bodyContent.substring(end + offsetEnd);
 				}
-				
+
 				// Remove any tags of the form <open></open>
 				bodyContent = bodyContent.replaceAll("[<][b][>][<][/][b][>]", "");
 				bodyContent = bodyContent.replaceAll("[<][b][>]\\s*[<][/][b][>]", " ");
 				bodyContent = bodyContent.replaceAll("[<][/][b][>][<][b][>]", "");
 				bodyContent = bodyContent.replaceAll("[<][/][b][>]\\s*[<][b][>]", " ");
-				
+
 				bodyContent = bodyContent.replaceAll("[<][i][>][<][/][i][>]", "");
 				bodyContent = bodyContent.replaceAll("[<][i][>]\\s*[<][/][i][>]", " ");
 				bodyContent = bodyContent.replaceAll("[<][/][i][>][<][i][>]", "");
 				bodyContent = bodyContent.replaceAll("[<][/][i][>]\\s*[<][i][>]", " ");
-				
+
 				Main.DEBUG(bodyContent);
-				
+
 				Element newBodyNode = p.buildNode("<body>\n\t" + bodyContent + "\n</body>");
-				
+
 				p.replaceBodyNode(newBodyNode);
-				
+
 				chatTypingPane.setText(p.getHTMLText());
-			} catch(SAXException e) {
+			} catch (SAXException e) {
 				System.out.println(e.getMessage());
-			} catch(StringIndexOutOfBoundsException e) {
+			} catch (StringIndexOutOfBoundsException e) {
 				System.out.println(e.getMessage());
 				e.printStackTrace();
 			}
-			
 
 		}
+
 		/**
-		 * Calculates the number of tag-characters that differ between the two html-strings
-		 * @param plain - The plain non-formatted text representation
-		 * @param html - The HTML representation of the text
-		 * @param endIndex - The index to end at
-		 * @return The number of characters differing the plain and html represenation
+		 * Calculates the number of tag-characters that differ between the two
+		 * html-strings
+		 * 
+		 * @param plain
+		 *            - The plain non-formatted text representation
+		 * @param html
+		 *            - The HTML representation of the text
+		 * @param endIndex
+		 *            - The index to end at
+		 * @return The number of characters differing the plain and html
+		 *         represenation
 		 */
 		private int preceededTagIndices(String plain, String html, int endIndex) {
-			
+
 			int pl = 0;
 			int ht = 0;
 			for (; pl < endIndex; pl++) {
-				//System.out.println("Comparing " + plain.charAt(pl) + " with " + html.charAt(ht));
-				if(plain.charAt(pl) == html.charAt(ht)) {
+				// System.out.println("Comparing " + plain.charAt(pl) + " with "
+				// + html.charAt(ht));
+				if (plain.charAt(pl) == html.charAt(ht)) {
 					ht++;
 					continue;
-				}
-				else if (ht+2 > html.length() - 1 ) {
+				} else if ((ht + 2) > (html.length() - 1)) {
 					break;
-				}
-				else if (html.charAt(ht) == '<' && (html.charAt(ht+1) == 'b' || html.charAt(ht+1) == 'i')) {
+				} else if ((html.charAt(ht) == '<') && ((html.charAt(ht + 1) == 'b') || (html.charAt(ht + 1) == 'i'))) {
 					ht += 3;
 					pl--;
 					continue;
-				}
-				else if ((html.charAt(ht) == '<' && (html.charAt(ht+2) == 'b' || html.charAt(ht+2) == 'i')) && html.charAt(ht+1) == '/') {
+				} else if (((html.charAt(ht) == '<') && ((html.charAt(ht + 2) == 'b') || (html.charAt(ht + 2) == 'i')))
+						&& (html.charAt(ht + 1) == '/')) {
 					ht += 4;
 					pl--;
 					continue;
 				}
 			}
-			//System.out.println(ht-pl);
+			// System.out.println(ht-pl);
 			return ht - pl;
 		}
-		
+
 	}
-	
+
 	/**
-	 * EventHandler for the Send-button. Handles the send procedeure and produces a Message-instance to be broadcasted.
+	 * EventHandler for the Send-button. Handles the send procedeure and
+	 * produces a Message-instance to be broadcasted.
+	 * 
 	 * @author anton
 	 *
 	 */
@@ -413,7 +442,7 @@ public class ChatPanelGUI extends JPanel {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if(e.getSource() == chatSendButton) {
+			if (e.getSource() == chatSendButton) {
 				HTMLParser displayParser = null;
 				HTMLParser typingParser = null;
 				try {
@@ -424,23 +453,25 @@ public class ChatPanelGUI extends JPanel {
 					e1.printStackTrace();
 					return;
 				}
-				
+
 				Message msg = new MessageParser().convertHTMLtoMessage(typingParser);
-				//System.out.println(msg.getHTMLRepresentation());
+				// System.out.println(msg.getHTMLRepresentation());
 				displayParser.appendToBodyNode(msg.getHTMLRepresentation());
 				chatDisplayPane.setText(displayParser.getHTMLText());
-				//Main.DEBUG(chatDisplayPane.getText());
+				// Main.DEBUG(chatDisplayPane.getText());
 				chatTypingPane.setText("");
-				
+
 				chatThread.dispatchMessage(msg);
-			
+
 			}
 		}
 	}
-	
+
 	/**
+	 *
+	 * OptionPanel Event-Handler that handles input from the OptionPane, that
+	 * is, removing users/clients and closing down chats.
 	 * 
-	 * OptionPanel Event-Handler that handles input from the OptionPane, that is, removing users/clients and closing down chats.
 	 * @author anton
 	 *
 	 */
@@ -448,49 +479,51 @@ public class ChatPanelGUI extends JPanel {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			// If we want to end the current chat, close it and send a message to all connected users.
-			if(e.getSource() == endChatButton) {
+			// If we want to end the current chat, close it and send a message
+			// to all connected users.
+			if (e.getSource() == endChatButton) {
 				System.out.println("End Chat");
-				Message disconnectMessage = new Message(new Message.MessageBuilder().disconnect().setMessageSender(Main.CURRENT_CHAT_NAME));
+				Message disconnectMessage = new Message(
+						new Message.MessageBuilder().disconnect().setMessageSender(Main.CURRENT_CHAT_NAME));
 				chatThread.dispatchMessage(disconnectMessage);
 				chatThread.disconnectAll();
-				
-			} 
-			else if (e.getSource() == kickButton) {
+
+			} else if (e.getSource() == kickButton) {
 				System.out.println("Kick User");
-				Message kickMessage = new Message(
-						new Message.MessageBuilder().disconnect().setMessageSender(Main.CURRENT_CHAT_NAME).setText("You have been kicked from the session."));
+				Message kickMessage = new Message(new Message.MessageBuilder().disconnect()
+						.setMessageSender(Main.CURRENT_CHAT_NAME).setText("You have been kicked from the session."));
 				if (!userList.isSelectionEmpty()) {
 					String user = userList.getSelectedValuesList().get(0);
 					System.out.println("Kicking user: " + user);
 					chatThread.sendMessageToClient(user, kickMessage);
-					
+
 					Message userHaveBeenKicked = new Message(
-							new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME).setText("User " + user + " have been kicked from the session"));
+							new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME)
+									.setText("User " + user + " have been kicked from the session"));
 					chatThread.dispatchMessage(userHaveBeenKicked);
 					chatThread.disconnecClient(user);
-						
+
 				}
 			}
 		}
 
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
-			if(!userList.isSelectionEmpty()) {
+			if (!userList.isSelectionEmpty()) {
 				kickButton.setEnabled(true);
 			}
 		}
 
 		@Override
 		public void focusGained(FocusEvent e) {
-			if(!userList.isSelectionEmpty()) {
+			if (!userList.isSelectionEmpty()) {
 				kickButton.setEnabled(true);
 			}
 		}
 
 		@Override
 		public void focusLost(FocusEvent e) {
-			if(e.getOppositeComponent() != kickButton) {
+			if (e.getOppositeComponent() != kickButton) {
 				kickButton.setEnabled(false);
 				userList.clearSelection();
 			}
