@@ -45,7 +45,14 @@ public class MessageParser {
 		}
 		if (parser.getBodyContent() != null) {
 			String bodyContent = parser.getBodyContent();
-			String text = bodyContent.substring(6, bodyContent.length() - 7);
+			//Main.DEBUG(text);
+			if (bodyContent.startsWith("<body>")) {
+				bodyContent = bodyContent.substring(6);
+			}
+			if (bodyContent.endsWith("</body>")) {
+				bodyContent = bodyContent.substring(0, bodyContent.length() - 7);
+			}
+			String text = bodyContent;
 			// Main.DEBUG(text);
 			text = text.replaceAll("<b>", "<fetstil>");
 			text = text.replaceAll("</b>", "</fetstil>");
@@ -81,7 +88,7 @@ public class MessageParser {
 			doc = documentBuilder.parse(new InputSource(new StringReader(inputString)));
 			doc.getDocumentElement().normalize();
 		} catch (SAXException | IOException e) {
-			System.out.println("Recieved badly formatted message: " + inputString);
+			System.err.println("Recieved badly formatted message: " + inputString);
 		}
 
 		NodeList nodes = doc.getChildNodes();
@@ -107,11 +114,11 @@ public class MessageParser {
 			// Text-tag, extrahera färg, annars välj svart
 			else if (node.getNodeName().equalsIgnoreCase("text")) {
 				if ((node.getAttributes().getNamedItem("color") != null)
-						&& node.getAttributes().getNamedItem("color").getNodeValue().matches("[A-F0-9]{6}")) {
+						&& node.getAttributes().getNamedItem("color").getNodeValue().matches("[#][A-F0-9]{6}")) {
 
 					messageBuilder.setTextColor(node.getAttributes().getNamedItem("color").getNodeValue());
 				} else {
-					messageBuilder.setTextColor("000000");
+					messageBuilder.setTextColor("#000000");
 				}
 				messageBuilder.setText(getInnerXML(node, false));
 				// System.out.println(getInnerXML(node));

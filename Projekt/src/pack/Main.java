@@ -126,18 +126,17 @@ public class Main {
 	 *            - The socket to start a new chat with
 	 */
 	public void createNewChat(Socket conn) {
-		Main.DEBUG("Creating a new chat");
+		Main.DEBUG("Creating a new chat...");
 		ChatThread chatThread = new ChatThread(
 				conn.getInetAddress() == null ? "default" : conn.getInetAddress().getHostAddress());
 		MainGUI.getInstance().getChats().add(chatThread);
 
-		Main.DEBUG("ChatThread created. Current chatlist has " + MainGUI.getInstance().getChats().size() + " chats.");
+		Main.DEBUG("ChatThread "+ conn.getInetAddress().getHostAddress() +" created. Current chatlist has " + MainGUI.getInstance().getChats().size() + " chats.");
 		
 		ClientThread clientThread = new ClientThread(conn, chatThread);
 		clientThread.start();
 
-		
-		chatThread.addClientThread(clientThread);
+		//chatThread.addClientThread(clientThread);
 
 		
 
@@ -151,42 +150,50 @@ public class Main {
 	 */
 	public void addToMultiChat(Socket conn) {
 		Main.DEBUG("Adding new client to multi-chat");
+		
 		if (MainGUI.getInstance().getChats().size() == 0) {
 			// No existing chats
 			Main.DEBUG("There existed no chats, creating a new one");
 			createNewChat(conn);
-		} else if (MainGUI.getInstance().getChats().size() == 1) {
+		} 
+		else if (MainGUI.getInstance().getChats().size() == 1) {
 			// One existing chat
 			Main.DEBUG("There existed one current chat. Adding to that one.");
 			ChatThread chatThread = MainGUI.getInstance().getChats().get(0);
+			
 			ClientThread clientThread = new ClientThread(conn, chatThread);
 			clientThread.start();
-			chatThread.addClientThread(clientThread);
-		} else {
+			
+			//chatThread.addClientThread(clientThread);
+		} 
+		else {
 			// Find multi-part chat
 			Main.DEBUG("There existed multiple chats. User choice if all current chats are private.");
 			ChatThread multiChat = null;
+			
 			for (ChatThread thread : MainGUI.getInstance().getChats()) {
 				// If one chatthread has multiple users, add to that one
 				if (thread.getClients().size() > 1) {
+					Main.DEBUG("There existed one chat with multiple users. Adding to that one.");
 					multiChat = thread;
 				}
 			}
 			if (multiChat == null) {
+				Main.DEBUG("There existed no chat with multiple users. Your choice");
 				Object[] options = MainGUI.getInstance().getChatNames();
-				String answer = null;
-				while (answer != null) {
-					answer = (String) JOptionPane.showInputDialog(MainGUI.getInstance(),
+				Object answer = null;
+				while (answer == null) {
+					answer = JOptionPane.showInputDialog(MainGUI.getInstance(),
 							"Choose which chat you would like to add the new connection to:", "Multi-chat",
 							JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 				}
-				multiChat = MainGUI.getInstance().getChatByName(answer);
-				assert (multiChat == null) : "ERROR: Could not find multi-chat";
+				multiChat = MainGUI.getInstance().getChatByName((String) answer);
+				assert (multiChat != null) : "ERROR: Could not find multi-chat";
 
 				ClientThread clientThread = new ClientThread(conn, multiChat);
 				clientThread.start();
 
-				multiChat.addClientThread(clientThread);
+				//multiChat.addClientThread(clientThread);
 			}
 
 		}

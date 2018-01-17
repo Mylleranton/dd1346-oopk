@@ -23,6 +23,9 @@ public class ClientThread extends Thread {
 		
 	
 	public ClientThread(Socket socket, ChatThread chatThread) {
+		assert(socket != null):"Socket cannot be null";
+		assert(chatThread != null):"ChatThread cannot be null";
+		
 		this.chatThread = chatThread;
 		this.socket = socket;
 
@@ -40,27 +43,25 @@ public class ClientThread extends Thread {
 		} finally {
 			if(message.disconnect() && message.getSender().equalsIgnoreCase(Main.CURRENT_CHAT_NAME)) {
 				Main.DEBUG("Message sent contained disconnect - ending streams");
-				chatThread.removeClientThread(this);
-				endConnection();
-				chatThread.onDisconnect();
+				chatThread.disconnectClient(this);
 			}
 		}
 	}
 	
 	public void recieveMessage(Message message) {
 		System.out.println("Recieved message: " + message.getMessage());
-		if(!getDisplayName().equalsIgnoreCase(message.getSender())) {
+		if(!getDisplayName().equalsIgnoreCase(message.getSender()) && !message.getSender().equalsIgnoreCase("")) {
 			this.name = message.getSender();
 			chatThread.onNameUpdate();
 		}
 		
+		chatThread.getChatPanelGUI().displayMessage(message);
+		
+		
 		chatThread.sendMessageToAllButOne(getID(), message);
 		
 		if (message.disconnect()) {
-			chatThread.removeClientThread(this);
-			chatThread.dispatchMessage(new Message(new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME).setText("User " + name + " has disconnected.")));
-			this.endConnection();
-			chatThread.onDisconnect();
+			chatThread.disconnectClient(this);
 		}
 	}
 	
@@ -98,6 +99,8 @@ public class ClientThread extends Thread {
 		}
 		
 		Main.DEBUG("Created ClientThread with ID " + ID);
+		// Add to the chats client-list
+		chatThread.addClientThread(this);
 		runClientThread();
 	}
 	

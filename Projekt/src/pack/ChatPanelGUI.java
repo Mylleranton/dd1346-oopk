@@ -501,7 +501,7 @@ public class ChatPanelGUI extends JPanel {
 							new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME)
 									.setText("User " + user + " have been kicked from the session"));
 					chatThread.dispatchMessage(userHaveBeenKicked);
-					chatThread.disconnecClient(user);
+					chatThread.disconnectClient(user);
 
 				}
 			}

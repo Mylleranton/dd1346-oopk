@@ -103,8 +103,8 @@ public class MainGUI extends JFrame {
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
+				Main.DEBUG("EVENT");
 				if (chatPanel.getSelectedIndex() >= 0 && chats.size() > 0) {
-					System.out.println(chats.size());
 					ChatThread newChat = chats.get(chatPanel.getSelectedIndex());
 					MainGUI.getInstance().setOptionPanel(newChat.getChatPanelGUI().getOptionPane());
 				}
@@ -397,6 +397,7 @@ public class MainGUI extends JFrame {
 	 */
 	public void addChatPanel(ChatPanelGUI gui) {
 		chatPanel.add(gui.getName(), gui);
+		setOptionPanel(gui.getOptionPane());
 	}
 
 	/**
@@ -424,9 +425,10 @@ public class MainGUI extends JFrame {
 	 * @param optionPanel
 	 *            - the optionpanel to set active
 	 */
-	public void setOptionPanel(JPanel optionPanel) {
+	public void setOptionPanel(JPanel newPanel) {
+		//Main.DEBUG("Tab changed from optionpanel "+ this.optionPanel.toString() + " to " + newPanel.toString());
 		this.optionPanel.removeAll();
-		this.optionPanel.validate();
+		this.optionPanel.repaint();
 		GridBagConstraints c = new GridBagConstraints();
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1;
@@ -434,9 +436,10 @@ public class MainGUI extends JFrame {
 		c.gridx = 0;
 		c.gridy = 0;
 
-		this.optionPanel.add(optionPanel, c);
-		optionPanel.setVisible(true);
-		//Main.DEBUG("Tab changed");
+		this.optionPanel.add(newPanel, c);
+		this.optionPanel.revalidate();
+		newPanel.setVisible(true);
+		
 	}
 
 	/**
@@ -445,11 +448,11 @@ public class MainGUI extends JFrame {
 	 * @return
 	 */
 	public String[] getChatNames() {
-		ArrayList<String> strs = new ArrayList<String>();
-		for (ChatThread th : chats) {
-			strs.add(th.getChatPanelGUI().getName());
+		String[] strs = new String[chats.size()];
+		for (int i = 0; i < chats.size(); i++) {
+			strs[i] =  (chats.get(i).getChatPanelGUI().getName());
 		}
-		return (String[]) strs.toArray();
+		return strs;
 	}
 
 	/**
