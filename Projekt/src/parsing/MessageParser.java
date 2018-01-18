@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 
+import javax.swing.JOptionPane;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -17,6 +18,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import pack.Main;
+import pack.MainGUI;
 
 public class MessageParser {
 
@@ -56,10 +58,10 @@ public class MessageParser {
 			// Main.DEBUG(text);
 
 			// STYLE IMPLEMENTATION
-			// text = text.replaceAll("<b>", "<fetstil>");
-			// text = text.replaceAll("</b>", "</fetstil>");
-			// text = text.replaceAll("<i>", "<kursiv>");
-			// text = text.replaceAll("</i>", "</kursiv>");
+			text = text.replaceAll("<b>", "<fetstil>");
+			text = text.replaceAll("</b>", "</fetstil>");
+			text = text.replaceAll("<i>", "<kursiv>");
+			text = text.replaceAll("</i>", "</kursiv>");
 
 			messageBuilder.setText(text);
 		}
@@ -92,6 +94,8 @@ public class MessageParser {
 			doc.getDocumentElement().normalize();
 		} catch (SAXException | IOException e) {
 			System.err.println("Recieved badly formatted message: " + inputString);
+			JOptionPane.showMessageDialog(MainGUI.getInstance(), "Recieved a broken message from:\n" + inputString, "Broken message", JOptionPane.ERROR_MESSAGE);
+			return null;
 		}
 
 		NodeList nodes = doc.getChildNodes();

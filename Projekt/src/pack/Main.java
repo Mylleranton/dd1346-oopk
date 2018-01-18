@@ -9,6 +9,16 @@ import java.net.UnknownHostException;
 
 import javax.swing.JOptionPane;
 
+
+/**
+ * Runnable main-class that initializes the MainGUI and serves as the backend implementation of 
+ * the MainGUI. 
+ * 
+ * Singleton, with static instance access.
+ * 
+ * @author anton
+ *
+ */
 public class Main {
 
 	public static String CURRENT_CHAT_NAME = "Server";
@@ -18,10 +28,19 @@ public class Main {
 
 	private ServerSocket serverSocket;
 
+	/**
+	 * Holder class for the instance of Main
+	 * @author anton
+	 *
+	 */
 	public static class MainHolder {
 		private static final Main INSTANCE = new Main();
 	}
 
+	/**
+	 * Main method
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		@SuppressWarnings("unused")
 		MainGUI mainGUI_instance = MainGUI.getInstance();
@@ -79,6 +98,9 @@ public class Main {
 		}
 	}
 
+	/**
+	 * Stops the running server (if running), and makes sure that no clients are disconnected unnessecarily
+	 */
 	public void stopServer() {
 		if (MainGUI.getInstance().getChats().size() > 0) {
 			int answer = JOptionPane.showConfirmDialog(MainGUI.getInstance(),
@@ -235,7 +257,8 @@ public class Main {
 				multiChat = MainGUI.getInstance().getChatByName((String) answer);
 
 			}
-
+			
+			// If the selection for some reason failes, then we create a new chat instead.
 			if (multiChat == null) {
 				System.err.println("Could not find chosen multi-chat. Reverting to private chat mode");
 				createNewChat(conn);

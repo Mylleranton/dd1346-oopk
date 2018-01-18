@@ -69,6 +69,10 @@ public class ClientThread extends Thread {
 	 * @param message
 	 */
 	public void recieveMessage(Message message) {
+		if(message == null) {
+			System.out.println("Cannot handle null message");
+			return;
+		}
 		System.out.println("Recieved message: " + message.getMessage());
 		if (!getDisplayName().equalsIgnoreCase(message.getSender()) && !message.getSender().equalsIgnoreCase("")) {
 			if (!message.getSender().startsWith("SYSTEM")) {

@@ -13,6 +13,7 @@ import java.awt.event.FocusListener;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -252,8 +253,9 @@ public class ChatPanelGUI extends JPanel {
 		try {
 			displayParser = new HTMLParser(chatDisplayPane.getText());
 		} catch (SAXException e1) {
-			System.out.println("Error in HTML-formatting");
+			System.out.println("Error in HTML-formatting: " + e1.getMessage());
 			e1.printStackTrace();
+			JOptionPane.showMessageDialog(MainGUI.getInstance(), "Recieved a broken message from "+ msg.getSender() +": \n" + msg.getMessage(), "Broken message", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		displayParser.appendToBodyNode(msg.getHTMLRepresentation());
