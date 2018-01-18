@@ -27,7 +27,6 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.Timer;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -48,7 +47,7 @@ public class MainGUI extends JFrame {
 	private JTabbedPane chatPanel;
 	private JPanel buttonPanel;
 	private JPanel optionPanel;
-	private ArrayList<ChatThread> chats = new ArrayList<ChatThread>();
+	private ArrayList<ChatPanel> chats = new ArrayList<ChatPanel>();
 
 	public static class MainGUIHolder {
 		private static final MainGUI INSTANCE = new MainGUI();
@@ -58,14 +57,14 @@ public class MainGUI extends JFrame {
 	 * Initialize graphics
 	 */
 	private MainGUI() {
-		setPreferredSize(new Dimension((int) WIDTH, (int) HEIGHT));
+		setPreferredSize(new Dimension(WIDTH, HEIGHT));
 
 		try {
 			UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		// Layout, och en knappanel samt en chatpanel
 		setLayout(new GridBagLayout());
 
@@ -74,24 +73,26 @@ public class MainGUI extends JFrame {
 		chatPanel.setMaximumSize(new Dimension((int) (0.7 * WIDTH), HEIGHT));
 		chatPanel.setMinimumSize(new Dimension((int) (0.6 * WIDTH), HEIGHT));
 
-
 		buttonPanel = new JPanel();
 		buttonPanel.setPreferredSize(new Dimension((int) (0.4 * WIDTH), (int) (0.65 * HEIGHT)));
 		buttonPanel.setMinimumSize(new Dimension((int) (0.4 * WIDTH), (int) (0.65 * HEIGHT)));
 		buttonPanel.setMaximumSize(new Dimension((int) (0.4 * WIDTH), (int) (0.7 * HEIGHT)));
 		buttonPanel.setLayout(new GridBagLayout());
-		TitledBorder b = BorderFactory.createTitledBorder(BorderFactory.createMatteBorder(2, 0, 0, 2, new Color(184, 207, 229)), "ANSLUTNINGSINSTÄLLNINGAR", TitledBorder.RIGHT, TitledBorder.TOP, null, Color.GRAY);
+		TitledBorder b = BorderFactory.createTitledBorder(
+				BorderFactory.createMatteBorder(2, 0, 0, 2, new Color(184, 207, 229)), "ANSLUTNINGSINSTÄLLNINGAR",
+				TitledBorder.RIGHT, TitledBorder.TOP, null, Color.GRAY);
 		buttonPanel.setBorder(b);
-		
-		
+
 		optionPanel = new JPanel();
 		optionPanel.setPreferredSize(new Dimension((int) (0.4 * MainGUI.WIDTH), (int) (0.3 * MainGUI.HEIGHT)));
 		optionPanel.setMinimumSize(new Dimension((int) (0.4 * MainGUI.WIDTH), (int) (0.3 * MainGUI.HEIGHT)));
 		optionPanel.setMaximumSize(new Dimension((int) (0.4 * MainGUI.WIDTH), (int) (0.30 * MainGUI.HEIGHT)));
 		optionPanel.setLayout(new GridBagLayout());
-		TitledBorder b2 = BorderFactory.createTitledBorder(BorderFactory.createMatteBorder(2, 0, 0, 2, new Color(184, 207, 229)), "CHATTINSTÄLLNINGAR", TitledBorder.RIGHT, TitledBorder.TOP, null, Color.GRAY);
+		TitledBorder b2 = BorderFactory.createTitledBorder(
+				BorderFactory.createMatteBorder(2, 0, 0, 2, new Color(184, 207, 229)), "CHATTINSTÄLLNINGAR",
+				TitledBorder.RIGHT, TitledBorder.TOP, null, Color.GRAY);
 		optionPanel.setBorder(b2);
-		
+
 		setupButtonPanel();
 
 		GridBagConstraints c = new GridBagConstraints();
@@ -101,21 +102,20 @@ public class MainGUI extends JFrame {
 		c.weighty = 0.6;
 		c.gridx = 0;
 		c.gridy = 0;
-		c.insets = new Insets(5,5,5,5);
+		c.insets = new Insets(5, 5, 5, 5);
 		add(buttonPanel, c);
-		
+
 		c.weightx = 0.3;
 		c.weighty = 1;
 		c.gridy = 1;
 		add(optionPanel, c);
 
-		
 		c.weightx = 1;
 		c.weighty = 1;
 		c.gridx = 1;
 		c.gridy = 0;
 		c.gridheight = 2;
-		c.insets = new Insets(0,0,0,0);
+		c.insets = new Insets(0, 0, 0, 0);
 		add(chatPanel, c);
 
 		// Make sure that the OptionPanel changes with the tabs of the chatpanel
@@ -123,8 +123,8 @@ public class MainGUI extends JFrame {
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				if (chatPanel.getSelectedIndex() >= 0 && chats.size() > 0) {
-					ChatThread newChat = chats.get(chatPanel.getSelectedIndex());
+				if ((chatPanel.getSelectedIndex() >= 0) && (chats.size() > 0)) {
+					ChatPanel newChat = chats.get(chatPanel.getSelectedIndex());
 					MainGUI.getInstance().setOptionPanel(newChat.getChatPanelGUI().getOptionPane());
 				}
 			}
@@ -169,17 +169,21 @@ public class MainGUI extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (portTextField.getText().matches("[1-9]\\d{2,5}")) {
-					portTextField.setForeground(Color.BLACK);
-					if (!Main.outgoingConnectionEnabled) {
-						if (portTextField.isEditable()) {
-							portChangeButton.setText("Ändra");
-							portTextField.setEditable(false);
-							Main.CURRENT_PORT = Integer.parseInt(portTextField.getText());
+					if (Integer.parseInt(portTextField.getText()) < 65535 && Integer.parseInt(portTextField.getText()) > 1023 ) {
+						portTextField.setForeground(Color.BLACK);
+						if (!Main.outgoingConnectionEnabled) {
+							if (portTextField.isEditable()) {
+								portChangeButton.setText("Ändra");
+								portTextField.setEditable(false);
+								Main.CURRENT_PORT = Integer.parseInt(portTextField.getText());
 
-						} else {
-							portChangeButton.setText("Klar");
-							portTextField.setEditable(true);
+							} else {
+								portChangeButton.setText("Klar");
+								portTextField.setEditable(true);
+							}
 						}
+					} else {
+						portTextField.setForeground(Color.RED);
 					}
 				} else {
 					portTextField.setForeground(Color.RED);
@@ -189,11 +193,11 @@ public class MainGUI extends JFrame {
 		});
 
 		startServerButton.setEnabled(true);
-		Timer timer = new Timer(1000*5, new ActionListener() {
+		Timer timer = new Timer(1000 * 5, new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(!Main.outgoingConnectionEnabled) {
+				if (!Main.outgoingConnectionEnabled) {
 					startServerButton.setEnabled(true);
 					startServerButton.setText("Starta server");
 					serverStatus.setText("Server AV");
@@ -205,13 +209,13 @@ public class MainGUI extends JFrame {
 					serverStatus.setForeground(Color.GREEN);
 				}
 			}
-			
+
 		});
 		startServerButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(!Main.outgoingConnectionEnabled) {
+				if (!Main.outgoingConnectionEnabled) {
 					new Thread(new Runnable() {
 						@Override
 						public void run() {
@@ -222,9 +226,8 @@ public class MainGUI extends JFrame {
 					portChangeButton.setEnabled(false);
 					portTextField.setEditable(false);
 					startServerButton.setEnabled(false);
-					
-				} 
-				else {
+
+				} else {
 					new Thread(new Runnable() {
 						@Override
 						public void run() {
@@ -234,9 +237,9 @@ public class MainGUI extends JFrame {
 					portChangeButton.setEnabled(true);
 					startServerButton.setEnabled(false);
 					portTextField.setEditable(false);
-					
+
 				}
-				
+
 			}
 
 		});
@@ -269,9 +272,9 @@ public class MainGUI extends JFrame {
 		c.gridx = 0;
 		c.gridy = 4;
 		buttonPanel.add(startServerButton, c);
-		
+
 		c.gridx = 1;
-		
+
 		buttonPanel.add(serverStatus, c);
 
 		// Separator
@@ -344,7 +347,7 @@ public class MainGUI extends JFrame {
 				} else if (!connectPortField.getText().matches("[1-9]\\d{2,5}")) {
 					connectPortField.setText("");
 					JOptionPane.showMessageDialog(MainGUI.getInstance(),
-							"Port is not valid. Must be in range 100-99999", "Invalid Port", JOptionPane.ERROR_MESSAGE);
+							"Port is not valid. Must be in range 1024-65535", "Invalid Port", JOptionPane.ERROR_MESSAGE);
 				} else {
 					progressBar.setVisible(true);
 					connectButton.setEnabled(false);
@@ -451,24 +454,25 @@ public class MainGUI extends JFrame {
 	}
 
 	/**
-	 * Adds a ChatPanelGUI to the server. Called on creation of a ChatThread.
-	 * 
+	 * Adds a ChatPanelGUI to the server. Called on creation of a ChatPanel.
+	 *
 	 * @param gui
 	 *            - the ChatPanelGUI instance to be added
 	 */
 	public void addChatPanel(ChatPanelGUI gui) {
 		chatPanel.add(gui.getName(), gui);
 		setOptionPanel(gui.getOptionPane());
+		chatPanel.setSelectedIndex(chatPanel.getSelectedIndex() + 1 < chatPanel.getTabCount() ? chatPanel.getSelectedIndex() + 1 : chatPanel.getSelectedIndex());
 	}
 
 	/**
 	 * Removes a chat panel without ending the internet connectivity from the
 	 * server
-	 * 
+	 *
 	 * @param chat
 	 *            - the chatthread to remove
 	 */
-	public void removeChatPanel(ChatThread chat) {
+	public void removeChatPanel(ChatPanel chat) {
 		System.out.println("Removing tab " + chat.getChatPanelGUI().getName());
 		chats.remove(chat);
 		chatPanel.remove(chat.getChatPanelGUI());
@@ -482,14 +486,15 @@ public class MainGUI extends JFrame {
 
 	/**
 	 * Sets the current optionPanel when switching chats
-	 * 
+	 *
 	 * @param optionPanel
 	 *            - the optionpanel to set active
 	 */
 	public void setOptionPanel(JPanel newPanel) {
-		//Main.DEBUG("Tab changed from optionpanel "+ this.optionPanel.toString() + " to " + newPanel.toString());
-		this.optionPanel.removeAll();
-		this.optionPanel.repaint();
+		// Main.DEBUG("Tab changed from optionpanel "+
+		// this.optionPanel.toString() + " to " + newPanel.toString());
+		optionPanel.removeAll();
+		optionPanel.repaint();
 		GridBagConstraints c = new GridBagConstraints();
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1;
@@ -497,35 +502,35 @@ public class MainGUI extends JFrame {
 		c.gridx = 0;
 		c.gridy = 0;
 
-		this.optionPanel.add(newPanel, c);
-		this.optionPanel.revalidate();
+		optionPanel.add(newPanel, c);
+		optionPanel.revalidate();
 		newPanel.setVisible(true);
-		
+
 	}
 
 	/**
 	 * Returns the names of the current chatthreads
-	 * 
+	 *
 	 * @return
 	 */
 	public String[] getChatNames() {
 		String[] strs = new String[chats.size()];
 		for (int i = 0; i < chats.size(); i++) {
-			strs[i] =  (chats.get(i).getChatPanelGUI().getName());
+			strs[i] = (chats.get(i).getChatPanelGUI().getName());
 		}
 		return strs;
 	}
 
 	/**
-	 * Returns the ChatThread with provided name if it exists, otherwise it
+	 * Returns the ChatPanel with provided name if it exists, otherwise it
 	 * returns null.
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 */
-	public ChatThread getChatByName(String name) {
-		ChatThread retThread = null;
-		for (ChatThread th : chats) {
+	public ChatPanel getChatByName(String name) {
+		ChatPanel retThread = null;
+		for (ChatPanel th : chats) {
 			if (th.getChatPanelGUI().getName().equalsIgnoreCase(name)) {
 				retThread = th;
 			}
@@ -535,14 +540,14 @@ public class MainGUI extends JFrame {
 
 	/**
 	 * Singleton instance of MainGUI
-	 * 
+	 *
 	 * @return the instance
 	 */
 	public static MainGUI getInstance() {
 		return MainGUIHolder.INSTANCE;
 	}
 
-	public ArrayList<ChatThread> getChats() {
+	public ArrayList<ChatPanel> getChats() {
 		return chats;
 	}
 

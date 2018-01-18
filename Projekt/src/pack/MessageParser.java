@@ -31,7 +31,6 @@ public class MessageParser {
 			e.printStackTrace();
 		}
 
-		
 	}
 
 	public Message convertHTMLtoMessage(HTMLParser parser) {
@@ -44,7 +43,7 @@ public class MessageParser {
 		}
 		if (parser.getBodyContent() != null) {
 			String bodyContent = parser.getBodyContent();
-			//Main.DEBUG(text);
+			// Main.DEBUG(text);
 			if (bodyContent.startsWith("<body>")) {
 				bodyContent = bodyContent.substring(6);
 			}
@@ -53,19 +52,19 @@ public class MessageParser {
 			}
 			String text = bodyContent;
 			// Main.DEBUG(text);
-			
+
 			// STYLE IMPLEMENTATION
-//			text = text.replaceAll("<b>", "<fetstil>");
-//			text = text.replaceAll("</b>", "</fetstil>");
-//			text = text.replaceAll("<i>", "<kursiv>");
-//			text = text.replaceAll("</i>", "</kursiv>");
-			
+			// text = text.replaceAll("<b>", "<fetstil>");
+			// text = text.replaceAll("</b>", "</fetstil>");
+			// text = text.replaceAll("<i>", "<kursiv>");
+			// text = text.replaceAll("</i>", "</kursiv>");
+
 			messageBuilder.setText(text);
 		}
 		return new Message(messageBuilder);
 
 	}
-	
+
 	@SuppressWarnings("unused")
 	public Message parseInputStream(File bfs) {
 		Document doc = null;

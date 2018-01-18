@@ -77,7 +77,7 @@ public class HTMLParser {
 
 	/**
 	 * Replaces the current <body>-node with the provided newNode
-	 * 
+	 *
 	 * @param newNode
 	 *            The new body node.
 	 */

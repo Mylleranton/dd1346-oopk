@@ -30,7 +30,7 @@ import org.xml.sax.SAXException;
  *
  * @author anton
  *
- *         Each ChatThread has a backend ChatPanelGUI which is the GUI to that
+ *         Each ChatPanel has a backend ChatPanelGUI which is the GUI to that
  *         chat. Displays all information and handles all graphical control of
  *         the chat.
  *
@@ -51,19 +51,19 @@ public class ChatPanelGUI extends JPanel {
 	JButton endChatButton;
 	JButton kickButton;
 
-	private ChatThread chatThread;
+	private ChatPanel chatPanel;
 
 	/**
 	 * Initializes a new chatpanelgui with an associated name and chatthread
-	 * 
+	 *
 	 * @param name
 	 *            The new name of the chat
 	 * @param chat
-	 *            The associated ChatThread
+	 *            The associated ChatPanel
 	 */
-	public ChatPanelGUI(String name, ChatThread chat) {
+	public ChatPanelGUI(String name, ChatPanel chat) {
 		setName(name);
-		chatThread = chat;
+		chatPanel = chat;
 		initializeGUI();
 		setupOptionPane();
 	}
@@ -90,8 +90,7 @@ public class ChatPanelGUI extends JPanel {
 		scrollPaneDisplay.setPreferredSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.6 * HEIGHT));
 		scrollPaneDisplay.setMinimumSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.6 * HEIGHT));
 		scrollPaneDisplay.setMaximumSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.55 * HEIGHT));
-		
-		
+
 		c.weightx = 1;
 		c.weighty = 1;
 		c.gridx = 0;
@@ -135,7 +134,8 @@ public class ChatPanelGUI extends JPanel {
 		chatTypingPane = new JTextPane();
 		chatTypingPane.setContentType("text/html");
 
-		// NOTE: THE INITIAL TEXT MUST BE NON_EMPTY IN ORDER FOR THE HTML-FORMATTING TO BE CORRECT
+		// NOTE: THE INITIAL TEXT MUST BE NON_EMPTY IN ORDER FOR THE
+		// HTML-FORMATTING TO BE CORRECT
 		chatTypingPane.setText("--");
 		chatTypingPane.setPreferredSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.4 * HEIGHT));
 		chatTypingPane.setMinimumSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.4 * HEIGHT));
@@ -143,7 +143,7 @@ public class ChatPanelGUI extends JPanel {
 
 		JScrollPane scrollPane = new JScrollPane(chatTypingPane, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
 				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		
+
 		scrollPane.setPreferredSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.4 * HEIGHT));
 		scrollPane.setMinimumSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.4 * HEIGHT));
 		scrollPane.setMaximumSize(new Dimension((int) 0.6 * MainGUI.WIDTH, (int) 0.45 * HEIGHT));
@@ -202,7 +202,7 @@ public class ChatPanelGUI extends JPanel {
 
 		c.weightx = 1;
 		c.weighty = 0.2;
-		c.gridwidth= 1;
+		c.gridwidth = 1;
 		c.gridheight = 1;
 		c.gridy = 2;
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -221,7 +221,7 @@ public class ChatPanelGUI extends JPanel {
 
 	/**
 	 * Returns the associated optionpane of the GUI
-	 * 
+	 *
 	 * @return The associated OptionPane
 	 */
 	public JPanel getOptionPane() {
@@ -239,7 +239,7 @@ public class ChatPanelGUI extends JPanel {
 
 	/**
 	 * Displays an incoming message to the chat GUI
-	 * 
+	 *
 	 * @param msg
 	 *            - The message to be displayed
 	 */
@@ -410,7 +410,7 @@ public class ChatPanelGUI extends JPanel {
 		/**
 		 * Calculates the number of tag-characters that differ between the two
 		 * html-strings
-		 * 
+		 *
 		 * @param plain
 		 *            - The plain non-formatted text representation
 		 * @param html
@@ -452,7 +452,7 @@ public class ChatPanelGUI extends JPanel {
 	/**
 	 * EventHandler for the Send-button. Handles the send procedeure and
 	 * produces a Message-instance to be broadcasted.
-	 * 
+	 *
 	 * @author anton
 	 *
 	 */
@@ -473,13 +473,13 @@ public class ChatPanelGUI extends JPanel {
 				}
 				Message msg = new MessageParser().convertHTMLtoMessage(typingParser);
 				// Only send non empty messages
-				if(!msg.getMessageText().trim().equalsIgnoreCase("")) {
+				if (!msg.getMessageText().trim().equalsIgnoreCase("")) {
 					// System.out.println(msg.getHTMLRepresentation());
 					displayParser.appendToBodyNode(msg.getHTMLRepresentation());
 					chatDisplayPane.setText(displayParser.getHTMLText());
 					chatTypingPane.setText("");
 
-					chatThread.dispatchMessage(msg);
+					chatPanel.dispatchMessage(msg);
 				}
 			}
 		}
@@ -489,7 +489,7 @@ public class ChatPanelGUI extends JPanel {
 	 *
 	 * OptionPanel Event-Handler that handles input from the OptionPane, that
 	 * is, removing users/clients and closing down chats.
-	 * 
+	 *
 	 * @author anton
 	 *
 	 */
@@ -501,35 +501,50 @@ public class ChatPanelGUI extends JPanel {
 			// to all connected users.
 			if (e.getSource() == endChatButton) {
 				System.out.println("End Chat");
-				Message disconnectMessage = new Message(
-						new Message.MessageBuilder().disconnect().setMessageSender(Main.CURRENT_CHAT_NAME).setText("User terminating connection"));
-				chatThread.dispatchMessage(disconnectMessage);
-				chatThread.disconnectAll();
-				chatThread.onDisconnectAll();
+				
+				// If disconnect, then send disconnect msg to all connected clients and close chat
+				if (chatPanel.getClients().size() > 0) {
+					// Notify clients
+					Message disconnectMessage = new Message(new Message.MessageBuilder().disconnect()
+							.setMessageSender(Main.CURRENT_CHAT_NAME).setText("User terminating connection"));
+					chatPanel.dispatchMessage(disconnectMessage);
+					chatPanel.disconnectAll();
+					
+					// Notify user
+					displayMessage(new Message(new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME)
+							.setText("-- All users disconnected. --")));
+					endChatButton.setText("Stäng chatt");
+				}
+				else {
+					chatPanel.onDisconnectAll();
+				}
+				
 
 			} else if (e.getSource() == kickButton) {
 				System.out.println("Kick User");
+				
+				// Notify kicked client
 				Message kickMessage = new Message(new Message.MessageBuilder().disconnect()
-						.setMessageSender("SYSTEM (" + Main.CURRENT_CHAT_NAME + ")").setTextColor("#FF0000").setText("---- You have been kicked from the session ----"));
+						.setMessageSender("SYSTEM (" + Main.CURRENT_CHAT_NAME + ")").setTextColor("#FF0000")
+						.setText("---- You have been kicked from the session ----"));
+				
 				if (!userList.isSelectionEmpty()) {
 					String qualifiedUsername = userList.getSelectedValuesList().get(0);
-					String userID = chatThread.getIDfromQualifiedName(qualifiedUsername);
-					if(userID != null) {
+					String userID = chatPanel.getIDfromQualifiedName(qualifiedUsername);
+					if (userID != null) {
 						System.out.println("Kicking user: " + userID);
-						chatThread.sendMessageToClient(userID, kickMessage);
-
-						Message userHaveBeenKicked = new Message(
-								new Message.MessageBuilder().setMessageSender("SYSTEM (" + Main.CURRENT_CHAT_NAME + ")").setTextColor("#FF0000")
-										.setText("---- User " + userID + " have been kicked from the session ----"));
-						chatThread.getChatPanelGUI().displayMessage(userHaveBeenKicked);
-						chatThread.dispatchMessage(userHaveBeenKicked);
-						chatThread.disconnectClient(userID);
-					} 
-					else {
+						chatPanel.sendMessageToClient(userID, kickMessage);
+						
+						// Notify other clients and user
+						Message userHaveBeenKicked = new Message(new Message.MessageBuilder()
+								.setMessageSender("SYSTEM (" + Main.CURRENT_CHAT_NAME + ")").setTextColor("#FF0000")
+								.setText("---- User " + userID + " have been kicked from the session ----"));
+						chatPanel.getChatPanelGUI().displayMessage(userHaveBeenKicked);
+						chatPanel.dispatchMessage(userHaveBeenKicked);
+						chatPanel.disconnectClient(userID);
+					} else {
 						System.err.println("Could not find a user with the qualified name " + qualifiedUsername);
 					}
-					
-					
 
 				}
 			}
@@ -537,8 +552,9 @@ public class ChatPanelGUI extends JPanel {
 
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
-			// If a user is selected and youre a server for a multi-part conversation
-			if (!userList.isSelectionEmpty() && chatThread.getClients().size() > 1) {
+			// If a user is selected and youre a server for a multi-part
+			// conversation
+			if (!userList.isSelectionEmpty() && (chatPanel.getClients().size() > 1)) {
 				kickButton.setEnabled(true);
 			} else {
 				kickButton.setEnabled(false);
@@ -547,7 +563,7 @@ public class ChatPanelGUI extends JPanel {
 
 		@Override
 		public void focusGained(FocusEvent e) {
-			if (!userList.isSelectionEmpty() && chatThread.getClients().size() > 1) {
+			if (!userList.isSelectionEmpty() && (chatPanel.getClients().size() > 1)) {
 				kickButton.setEnabled(true);
 			} else {
 				kickButton.setEnabled(false);

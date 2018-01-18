@@ -1,107 +1,113 @@
 package pack;
 
-import java.net.Socket;
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-
 /**
+ *
+ * ChatPanel is the backend implementation of a ChatPanelGUI that holds
+ * a number of clients (ClientThreads) and all in all represents a single chat.
+ *
+ * On creation of a ChatPanel, it will automatically create a ChatPanelGUI
+ * connected with it. Then ClientThreads can be connected to the chat by passing
+ * on a ChatPanel object on ClientThread creation.
  * 
- * ChatThread is the Thread backend implementation of a ChatPanelGUI that holds a number of
- * clients (ClientThreads) and all in all represents a single chat.
- * 
- * On creation of a ChatThread, it will automatically create a ChatPanelGUI connected with it. Then ClientThreads can be
- * connected to the chat by passing on a ChatThread object on ClientThread creation.
  * @author anton
  *
  */
-public class ChatThread extends Thread {
-	
+public class ChatPanel {
+
 	private ChatPanelGUI chatPanel;
 	private ArrayList<ClientThread> clients;
-	
-	public ChatThread(String name, ArrayList<ClientThread> clients) {
+	public boolean allClientsDisconnected = false;
+
+	public ChatPanel(String name, ArrayList<ClientThread> clients) {
 		this.clients = clients;
-		//SwingUtilities.invokeLater(() -> {
-			chatPanel = new ChatPanelGUI(name, this);
-			MainGUI.getInstance().addChatPanel(chatPanel);
-			chatPanel.getUserList().setListData(getClientDisplayNames());
-			
-			MainGUI.getInstance().setOptionPanel(chatPanel.getOptionPane());
-		//});
+		MainGUI.getInstance().getChats().add(this);
+
+		// SwingUtilities.invokeLater(() -> {
+		chatPanel = new ChatPanelGUI(name, this);
+		MainGUI.getInstance().addChatPanel(chatPanel);
+		chatPanel.getUserList().setListData(getClientDisplayNames());
+
+		//MainGUI.getInstance().setOptionPanel(chatPanel.getOptionPane());
+		// });
 	}
-	
-	public ChatThread(String name) {
+
+	public ChatPanel(String name) {
 		this(name, new ArrayList<ClientThread>());
 	}
-	
-	@Override
-	public void run(){
-		System.out.println("Thread created");
-	}
-	
-	
+
 	/**
-	 * Sends a message to all but one client (for the pourpose when a client sends the server a message)
-	 * @param clientName - The client the msg shouldn't be sent to
-	 * @param message - The message to be sent
+	 * Sends a message to all but one client (for the pourpose when a client
+	 * sends the server a message)
+	 * 
+	 * @param clientName
+	 *            - The client the msg shouldn't be sent to
+	 * @param message
+	 *            - The message to be sent
 	 */
 	public void sendMessageToAllButOne(String clientID, Message message) {
-		for(ClientThread t : clients) {
+		for (ClientThread t : clients) {
 			if (t.getID() != clientID) {
 				t.sendMessage(message);
 			}
 		}
 	}
-	
+
 	/**
-	 * Dispatches a message to all clients connected 
-	 * @param message the message to be dispatched.
+	 * Dispatches a message to all clients connected
+	 * 
+	 * @param message
+	 *            the message to be dispatched.
 	 */
 	public void dispatchMessage(Message message) {
-		for(ClientThread t : clients) {
+		for (ClientThread t : clients) {
 			t.sendMessage(message);
 			Main.DEBUG("Sent disconnect to " + t.getDisplayName());
 		}
-		if(message.disconnect()) {
-			//MainGUI.getInstance().removeChatPanel(this);
-		}
 	}
-	
+
 	/**
 	 * Dispatch a message to a particular client connected
-	 * @param clientName - The recieving client
-	 * @param message - The message to be sent
+	 * 
+	 * @param clientName
+	 *            - The recieving client
+	 * @param message
+	 *            - The message to be sent
 	 */
 	public void sendMessageToClient(String clientID, Message message) {
 		ClientThread thread = getClientThread(clientID);
 		if (thread != null) {
 			thread.sendMessage(message);
-		}
-		else {
+		} else {
 			System.out.println("Tried to send message to " + clientID + ". Could not find any client with that ID.");
 		}
 	}
-	
+
 	/**
 	 * Disconnects a certain client
-	 * @param clientName - The client to be disconnected
+	 * 
+	 * @param clientName
+	 *            - The client to be disconnected
 	 */
 	public void disconnectClient(ClientThread thread) {
 		removeClientThread(thread);
 		thread.endConnection();
-		//onDisconnect();
 	}
-	
+
 	/**
 	 * Disconnect a certain client
-	 * @param userID - The thread ID or displayname.
+	 * 
+	 * @param userID
+	 *            - The thread ID or displayname.
 	 */
 	public void disconnectClient(String userID) {
 		boolean sucess = false;
-		for(ClientThread t : clients) {
-			if(t.getID().equalsIgnoreCase(userID)) {
+		for (ClientThread t : clients) {
+			if (t.getID().equalsIgnoreCase(userID)) {
 				sucess = true;
 				disconnectClient(t);
 				return;
@@ -114,33 +120,41 @@ public class ChatThread extends Thread {
 				return;
 			}
 		}
-		if (sucess){
+		if (sucess) {
 			System.err.println("Could not disconnect user " + userID + ". No thread with that ID/name could be found.");
 		}
 		return;
 	}
-	
+
 	/**
 	 * Disconnects all active clientthreads.
 	 */
 	public void disconnectAll() {
-		for (ClientThread th : this.clients) {
+		allClientsDisconnected = true;
+		for (ClientThread th : clients) {
 			th.endConnection();
 		}
 		removeAllClientThreads();
+		SwingUtilities.invokeLater(() -> {
+			JOptionPane.showMessageDialog(MainGUI.getInstance(),
+					"The connection to all clients in the chat have been terminated", "Disconnected",
+					JOptionPane.INFORMATION_MESSAGE);
+		});
 	}
-	
+
 	/**
-	 * Called on disconnecting all from chat. If there are no clients left, then the chat closes.
+	 * Called on disconnecting all from chat. If there are no clients left, then
+	 * the chat closes.
 	 */
 	public void onDisconnectAll() {
 		if (clients.isEmpty()) {
 			MainGUI.getInstance().removeChatPanel(this);
 		}
 	}
-	
+
 	/**
-	 * Called on any type of disconnect happening withing the chat. If there are no clients left, then the chat closes.
+	 * Called on any type of disconnect happening withing the chat. If there are
+	 * no clients left, then the chat closes.
 	 */
 	public void onDisconnect() {
 		if (clients.isEmpty()) {
@@ -149,10 +163,12 @@ public class ChatThread extends Thread {
 			chatPanel.chatSendButton.setEnabled(false);
 			chatPanel.italicsButton.setEnabled(false);
 			chatPanel.kickButton.setEnabled(false);
-			chatPanel.displayMessage(new Message(new Message.MessageBuilder().setMessageSender("SYSTEM").setTextColor("#FF0000").setText("CHAT EMPTY - NO CLIENTS LEFT")));
+			chatPanel.displayMessage(new Message(new Message.MessageBuilder().setMessageSender("SYSTEM")
+					.setTextColor("#FF0000").setText("CHAT EMPTY - NO CLIENTS LEFT")));
+			getChatPanelGUI().endChatButton.setText("Stäng chatt");
 		}
 	}
-	
+
 	private void onConnect() {
 		if (!clients.isEmpty()) {
 			chatPanel.boldButton.setEnabled(true);
@@ -161,158 +177,169 @@ public class ChatThread extends Thread {
 			chatPanel.italicsButton.setEnabled(true);
 		}
 	}
-	
+
 	/**
 	 * Called whenever an associated ClientThread gets an updated display name
 	 */
 	public void onNameUpdate() {
 		// One client, then we name the chat the name of that client
 		String newName = "";
-		if(clients.size() == 1) {
+		if (clients.size() == 1) {
 			newName = clients.get(0).getDisplayName();
-		} 
+		}
 		// Several clients
 		else if (clients.size() > 1) {
 			newName = clients.get(0).getDisplayName().concat(" m.fl.");
 		}
-		int index = MainGUI.getInstance().getTabbedPane().indexOfComponent(this.getChatPanelGUI());
-		if (index >= 0 && !newName.equalsIgnoreCase("")) {
+		int index = MainGUI.getInstance().getTabbedPane().indexOfComponent(getChatPanelGUI());
+		if ((index >= 0) && !newName.equalsIgnoreCase("")) {
 			MainGUI.getInstance().getTabbedPane().setTitleAt(index, newName);
 			chatPanel.setName(newName);
 		}
-	
+
 		// Display as much information about the connected clients as possible!
-		
-		chatPanel.getUserList().setListData(this.getClientQualifiedNames());
+
+		chatPanel.getUserList().setListData(getClientQualifiedNames());
 	}
-	
+
 	public ArrayList<ClientThread> getClients() {
-		return this.clients;
+		return clients;
 	}
-	
+
 	/**
-	 * Adds the provided thread to chatthreads internal list of clients. Should ONLY be called from ClientThreads internal method call.
+	 * Adds the provided thread to chatthreads internal list of clients. Should
+	 * ONLY be called from ClientThreads internal method call.
+	 * 
 	 * @param thread
 	 */
 	public void addClientThread(ClientThread thread) {
-		this.clients.add(thread);
+		clients.add(thread);
 		onNameUpdate();
-		if ( clients.size() >= 1 && chatPanel != null) {
+		if ((clients.size() >= 1) && (chatPanel != null)) {
 			chatPanel.getUserList().setListData(getClientDisplayNames());
 		}
-		this.getChatPanelGUI().displayMessage(new Message(new Message.MessageBuilder().setMessageSender("SYSTEM").setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " connected.")));
-		
+		getChatPanelGUI().displayMessage(new Message(new Message.MessageBuilder().setMessageSender("SYSTEM")
+				.setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " connected.")));
+
 		// If server for multi-part chat, then relay the connection message
 		if (clients.size() > 1) {
-			this.sendMessageToAllButOne(thread.getID(), new Message(new Message.MessageBuilder().setMessageSender("SYSTEM").setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " connected.")));
+			sendMessageToAllButOne(thread.getID(), new Message(new Message.MessageBuilder().setMessageSender("SYSTEM")
+					.setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " connected.")));
 		}
-		
-		Main.DEBUG("ChatThread now has " + clients.size() + " clients");
+
+		Main.DEBUG("ChatPanel now has " + clients.size() + " clients");
 		onConnect();
 	}
-	
+
 	public void removeClientThread(ClientThread thread) {
-		this.clients.remove(thread);
+		clients.remove(thread);
 		onNameUpdate();
 		chatPanel.getUserList().setListData(getClientDisplayNames());
-		this.getChatPanelGUI().displayMessage(new Message(new Message.MessageBuilder().setMessageSender("SYSTEM").setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " disconnected.")));
-		
+		getChatPanelGUI().displayMessage(new Message(new Message.MessageBuilder().setMessageSender("SYSTEM")
+				.setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " disconnected.")));
+
 		// If server for multi-part chat, then relay the disconnect message
 		if (clients.size() > 0) {
-			this.sendMessageToAllButOne(thread.getID(), new Message(new Message.MessageBuilder().setMessageSender("SYSTEM").setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " disconnected.")));
+			sendMessageToAllButOne(thread.getID(), new Message(new Message.MessageBuilder().setMessageSender("SYSTEM")
+					.setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " disconnected.")));
 		}
-		
-		Main.DEBUG("ChatThread now has " + clients.size() + " clients");
+
+		Main.DEBUG("ChatPanel now has " + clients.size() + " clients");
 		onDisconnect();
 	}
-	
+
 	public void removeAllClientThreads() {
-		this.clients = new ArrayList<ClientThread>();
+		clients = new ArrayList<ClientThread>();
 		onNameUpdate();
 		chatPanel.getUserList().setListData(getClientDisplayNames());
-		this.dispatchMessage(new Message(new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME).setText("-- All users disconnected. --")));
-		Main.DEBUG("ChatThread now has " + clients.size() + " clients");
+		
+		Main.DEBUG("ChatPanel now has " + clients.size() + " clients");
 		onDisconnect();
 	}
-	
-	
+
 	////////////////////////////
-	//  GETTERS AND SETTERS	  //
+	// GETTERS AND SETTERS //
 	////////////////////////////
-	
+
 	public ChatPanelGUI getChatPanelGUI() {
-		return this.chatPanel;
+		return chatPanel;
 	}
-	
+
 	/**
-	 * Returns an array with the connected ClientThreads displaynames, which can be 
-	 * either their IP or a user set name.
+	 * Returns an array with the connected ClientThreads displaynames, which can
+	 * be either their IP or a user set name.
+	 * 
 	 * @return
 	 */
 	private String[] getClientDisplayNames() {
 		String[] names = new String[clients.size()];
-		for(int i = 0; i < clients.size(); i++) {
+		for (int i = 0; i < clients.size(); i++) {
 			names[i] = clients.get(i).getDisplayName();
 		}
 		return names;
 	}
-	
+
 	/**
 	 * Returns an array with the connected ClientThreads unique IDs
+	 * 
 	 * @return
 	 */
 	public String[] getClientIDs() {
 		String[] names = new String[clients.size()];
-		for(int i = 0; i < clients.size(); i++) {
+		for (int i = 0; i < clients.size(); i++) {
 			names[i] = clients.get(i).getID();
 		}
 		return names;
 	}
-	
+
 	/**
-	 * Return a list of all the qualified names of a client. 
-	 * Have the form "displayname (IP)" or "IP"
+	 * Return a list of all the qualified names of a client. Have the form
+	 * "displayname (IP)" or "IP"
+	 * 
 	 * @return
 	 */
 	public String[] getClientQualifiedNames() {
 		String[] dispNames = getClientDisplayNames();
 		String[] IDs = getClientIDs();
-		assert(dispNames.length == IDs.length): "Error in clientthreads arraylengths. ID and Names mismatch.";
+		assert (dispNames.length == IDs.length) : "Error in clientthreads arraylengths. ID and Names mismatch.";
 		String[] qualifiedNames = new String[IDs.length];
-		for(int i = 0; i < dispNames.length; i++) {
-			if(dispNames[i].equalsIgnoreCase(IDs[i])) {
+		for (int i = 0; i < dispNames.length; i++) {
+			if (dispNames[i].equalsIgnoreCase(IDs[i])) {
 				qualifiedNames[i] = IDs[i];
-			} 
-			else {
+			} else {
 				qualifiedNames[i] = dispNames[i].concat(" (" + IDs[i] + ")");
 			}
 		}
 		return qualifiedNames;
 	}
-	
+
 	/**
 	 * Get client ID from a qualified name
-	 * @param qual - The qualified name
+	 * 
+	 * @param qual
+	 *            - The qualified name
 	 * @return
 	 */
 	public String getIDfromQualifiedName(String qual) {
 		String[] dispNames = getClientDisplayNames();
 		String[] IDs = getClientIDs();
-		for(String ip : IDs) {
-			if(qual.equalsIgnoreCase(ip)) {
+		for (String ip : IDs) {
+			if (qual.equalsIgnoreCase(ip)) {
 				return ip;
 			}
 		}
-		
-		for(int i = 0; i < IDs.length; i++) {
+
+		for (int i = 0; i < IDs.length; i++) {
 			if (qual.startsWith(dispNames[i]) && qual.endsWith("(" + IDs[i] + ")")) {
 				return IDs[i];
 			}
 		}
 		return null;
 	}
+
 	/**
 	 * Return the clientthread with name name
+	 * 
 	 * @param name
 	 * @return The assiociated ClientThread if found, otherwise null
 	 */
@@ -326,7 +353,7 @@ public class ChatThread extends Thread {
 		}
 		// If we cant find user based on ID, try displayname
 		if (thread == null) {
-			for(ClientThread t : clients) {
+			for (ClientThread t : clients) {
 				if (t.getDisplayName().equalsIgnoreCase(ID)) {
 					thread = t;
 					break;
@@ -338,6 +365,6 @@ public class ChatThread extends Thread {
 
 	@Override
 	public String toString() {
-		return this.getChatPanelGUI().getName();
+		return getChatPanelGUI().getName();
 	}
 }

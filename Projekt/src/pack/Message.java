@@ -36,6 +36,7 @@ public class Message {
 
 		return sb.toString();
 	}
+
 	public String getMessageText() {
 		return TEXT;
 	}
@@ -43,7 +44,7 @@ public class Message {
 	public String getSender() {
 		return MESSAGE_SENDER == null ? "" : MESSAGE_SENDER;
 	}
-	
+
 	public String getTextColor() {
 		return TEXT_COLOR;
 	}
@@ -57,15 +58,15 @@ public class Message {
 			sb.append("</font>");
 		}
 		if (DISCONNECT) {
-			//sb.append("\n------ END OF CHAT ------ ");
+			// sb.append("\n------ END OF CHAT ------ ");
 		}
 		String text = sb.toString();
-		
+
 		// STYLE IMPLEMENTATION
-//		text = text.replaceAll("<fetstil>", "<b>");
-//		text = text.replaceAll("</fetstil>", "</b>");
-//		text = text.replaceAll("<kursiv>", "<i>");
-//		text = text.replaceAll("</kursiv>", "</i>");
+		// text = text.replaceAll("<fetstil>", "<b>");
+		// text = text.replaceAll("</fetstil>", "</b>");
+		// text = text.replaceAll("<kursiv>", "<i>");
+		// text = text.replaceAll("</kursiv>", "</i>");
 
 		return text;
 	}
