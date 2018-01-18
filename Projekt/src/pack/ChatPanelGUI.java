@@ -502,14 +502,15 @@ public class ChatPanelGUI extends JPanel {
 			if (e.getSource() == endChatButton) {
 				System.out.println("End Chat");
 				Message disconnectMessage = new Message(
-						new Message.MessageBuilder().disconnect().setMessageSender(Main.CURRENT_CHAT_NAME));
+						new Message.MessageBuilder().disconnect().setMessageSender(Main.CURRENT_CHAT_NAME).setText("User terminating connection"));
 				chatThread.dispatchMessage(disconnectMessage);
 				chatThread.disconnectAll();
+				chatThread.onDisconnectAll();
 
 			} else if (e.getSource() == kickButton) {
 				System.out.println("Kick User");
 				Message kickMessage = new Message(new Message.MessageBuilder().disconnect()
-						.setMessageSender(Main.CURRENT_CHAT_NAME).setText("---- You have been kicked from the session ----"));
+						.setMessageSender("SYSTEM (" + Main.CURRENT_CHAT_NAME + ")").setTextColor("#FF0000").setText("---- You have been kicked from the session ----"));
 				if (!userList.isSelectionEmpty()) {
 					String qualifiedUsername = userList.getSelectedValuesList().get(0);
 					String userID = chatThread.getIDfromQualifiedName(qualifiedUsername);
@@ -518,8 +519,9 @@ public class ChatPanelGUI extends JPanel {
 						chatThread.sendMessageToClient(userID, kickMessage);
 
 						Message userHaveBeenKicked = new Message(
-								new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME)
+								new Message.MessageBuilder().setMessageSender("SYSTEM (" + Main.CURRENT_CHAT_NAME + ")").setTextColor("#FF0000")
 										.setText("---- User " + userID + " have been kicked from the session ----"));
+						chatThread.getChatPanelGUI().displayMessage(userHaveBeenKicked);
 						chatThread.dispatchMessage(userHaveBeenKicked);
 						chatThread.disconnectClient(userID);
 					} 
@@ -535,15 +537,20 @@ public class ChatPanelGUI extends JPanel {
 
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
-			if (!userList.isSelectionEmpty()) {
+			// If a user is selected and youre a server for a multi-part conversation
+			if (!userList.isSelectionEmpty() && chatThread.getClients().size() > 1) {
 				kickButton.setEnabled(true);
+			} else {
+				kickButton.setEnabled(false);
 			}
 		}
 
 		@Override
 		public void focusGained(FocusEvent e) {
-			if (!userList.isSelectionEmpty()) {
+			if (!userList.isSelectionEmpty() && chatThread.getClients().size() > 1) {
 				kickButton.setEnabled(true);
+			} else {
+				kickButton.setEnabled(false);
 			}
 		}
 

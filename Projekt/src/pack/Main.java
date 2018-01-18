@@ -84,6 +84,9 @@ public class Main {
 		try {
 			serverSocket.close();
 			outgoingConnectionEnabled = false;
+			for (ChatThread chats : MainGUI.getInstance().getChats()) {
+				chats.disconnectAll();
+			}
 		} catch (IOException e) {
 			System.err.println("Failed to close server. " + e.getMessage());
 		}

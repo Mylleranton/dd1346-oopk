@@ -62,9 +62,10 @@ public class ChatThread extends Thread {
 	public void dispatchMessage(Message message) {
 		for(ClientThread t : clients) {
 			t.sendMessage(message);
+			Main.DEBUG("Sent disconnect to " + t.getDisplayName());
 		}
 		if(message.disconnect()) {
-			MainGUI.getInstance().removeChatPanel(this);
+			//MainGUI.getInstance().removeChatPanel(this);
 		}
 	}
 	
@@ -90,7 +91,7 @@ public class ChatThread extends Thread {
 	public void disconnectClient(ClientThread thread) {
 		removeClientThread(thread);
 		thread.endConnection();
-		onDisconnect();
+		//onDisconnect();
 	}
 	
 	/**
@@ -124,10 +125,18 @@ public class ChatThread extends Thread {
 	 */
 	public void disconnectAll() {
 		for (ClientThread th : this.clients) {
-			removeClientThread(th);
 			th.endConnection();
 		}
-		onDisconnect();
+		removeAllClientThreads();
+	}
+	
+	/**
+	 * Called on disconnecting all from chat. If there are no clients left, then the chat closes.
+	 */
+	public void onDisconnectAll() {
+		if (clients.isEmpty()) {
+			MainGUI.getInstance().removeChatPanel(this);
+		}
 	}
 	
 	/**
@@ -135,9 +144,24 @@ public class ChatThread extends Thread {
 	 */
 	public void onDisconnect() {
 		if (clients.isEmpty()) {
-			MainGUI.getInstance().removeChatPanel(this);
+			chatPanel.boldButton.setEnabled(false);
+			chatPanel.colorButton.setEnabled(false);
+			chatPanel.chatSendButton.setEnabled(false);
+			chatPanel.italicsButton.setEnabled(false);
+			chatPanel.kickButton.setEnabled(false);
+			chatPanel.displayMessage(new Message(new Message.MessageBuilder().setMessageSender("SYSTEM").setTextColor("#FF0000").setText("CHAT EMPTY - NO CLIENTS LEFT")));
 		}
 	}
+	
+	private void onConnect() {
+		if (!clients.isEmpty()) {
+			chatPanel.boldButton.setEnabled(true);
+			chatPanel.colorButton.setEnabled(true);
+			chatPanel.chatSendButton.setEnabled(true);
+			chatPanel.italicsButton.setEnabled(true);
+		}
+	}
+	
 	/**
 	 * Called whenever an associated ClientThread gets an updated display name
 	 */
@@ -176,17 +200,45 @@ public class ChatThread extends Thread {
 		if ( clients.size() >= 1 && chatPanel != null) {
 			chatPanel.getUserList().setListData(getClientDisplayNames());
 		}
-		this.dispatchMessage(new Message(new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME).setText("-- User " + thread.getDisplayName() + " connected. --")));
+		this.getChatPanelGUI().displayMessage(new Message(new Message.MessageBuilder().setMessageSender("SYSTEM").setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " connected.")));
+		
+		// If server for multi-part chat, then relay the connection message
+		if (clients.size() > 1) {
+			this.sendMessageToAllButOne(thread.getID(), new Message(new Message.MessageBuilder().setMessageSender("SYSTEM").setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " connected.")));
+		}
+		
 		Main.DEBUG("ChatThread now has " + clients.size() + " clients");
+		onConnect();
 	}
 	
 	public void removeClientThread(ClientThread thread) {
 		this.clients.remove(thread);
 		onNameUpdate();
 		chatPanel.getUserList().setListData(getClientDisplayNames());
-		this.dispatchMessage(new Message(new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME).setText("-- User " + thread.getDisplayName() + " disconnected. --")));
+		this.getChatPanelGUI().displayMessage(new Message(new Message.MessageBuilder().setMessageSender("SYSTEM").setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " disconnected.")));
+		
+		// If server for multi-part chat, then relay the disconnect message
+		if (clients.size() > 0) {
+			this.sendMessageToAllButOne(thread.getID(), new Message(new Message.MessageBuilder().setMessageSender("SYSTEM").setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " disconnected.")));
+		}
+		
 		Main.DEBUG("ChatThread now has " + clients.size() + " clients");
+		onDisconnect();
 	}
+	
+	public void removeAllClientThreads() {
+		this.clients = new ArrayList<ClientThread>();
+		onNameUpdate();
+		chatPanel.getUserList().setListData(getClientDisplayNames());
+		this.dispatchMessage(new Message(new Message.MessageBuilder().setMessageSender(Main.CURRENT_CHAT_NAME).setText("-- All users disconnected. --")));
+		Main.DEBUG("ChatThread now has " + clients.size() + " clients");
+		onDisconnect();
+	}
+	
+	
+	////////////////////////////
+	//  GETTERS AND SETTERS	  //
+	////////////////////////////
 	
 	public ChatPanelGUI getChatPanelGUI() {
 		return this.chatPanel;

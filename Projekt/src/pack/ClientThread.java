@@ -38,10 +38,10 @@ public class ClientThread extends Thread {
 			Main.DEBUG("SENT: " + message.getMessage());
 		} catch (IOException e) {
 			System.err.println(e.getMessage());
-		} catch (NullPointerException e) {
-			System.err.println(e.getMessage());
+		} catch (NullPointerException e2) {
+			System.err.println(e2.getMessage());
 		} finally {
-			if(message.disconnect() && message.getSender().equalsIgnoreCase(Main.CURRENT_CHAT_NAME)) {
+			if((message.disconnect() && message.getSender().equalsIgnoreCase(Main.CURRENT_CHAT_NAME)) && !message.getMessageText().equalsIgnoreCase("User terminating connection")) {
 				Main.DEBUG("Message sent contained disconnect - ending streams");
 				chatThread.disconnectClient(this);
 			}
@@ -51,8 +51,10 @@ public class ClientThread extends Thread {
 	public void recieveMessage(Message message) {
 		System.out.println("Recieved message: " + message.getMessage());
 		if(!getDisplayName().equalsIgnoreCase(message.getSender()) && !message.getSender().equalsIgnoreCase("")) {
-			this.name = message.getSender();
-			chatThread.onNameUpdate();
+			if (!message.getSender().startsWith("SYSTEM")) {
+				this.name = message.getSender();
+				chatThread.onNameUpdate();
+			}
 		}
 		
 		chatThread.getChatPanelGUI().displayMessage(message);
@@ -92,7 +94,7 @@ public class ClientThread extends Thread {
 			e.printStackTrace();
 		}
 		this.ID = socket.getInetAddress().getHostAddress();
-		int i = 0;
+		int i = 1;
 		for (String s : chatThread.getClientIDs()) {
 			if (s.equalsIgnoreCase(ID)) {
 				i++;
