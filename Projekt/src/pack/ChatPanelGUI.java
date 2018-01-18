@@ -26,6 +26,10 @@ import javax.swing.event.ListSelectionListener;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import parsing.HTMLParser;
+import parsing.Message;
+import parsing.MessageParser;
+
 /**
  *
  * @author anton

@@ -1,4 +1,4 @@
-package pack;
+package parsing;
 
 import java.io.IOException;
 import java.io.StringReader;

@@ -1,4 +1,4 @@
-package pack;
+package parsing;
 
 public class Message {
 

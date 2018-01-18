@@ -11,6 +11,9 @@ import java.net.SocketException;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import parsing.Message;
+import parsing.MessageParser;
+
 /**
  * A clientthread is a thread that will initialize on a socket and listen for incoming messages.
  * It is the Client-part to a ChatPanel, and must be connected to a chat.

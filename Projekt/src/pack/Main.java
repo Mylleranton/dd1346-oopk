@@ -11,10 +11,10 @@ import javax.swing.JOptionPane;
 
 public class Main {
 
-	protected static String CURRENT_CHAT_NAME = "Server";
-	protected static int CURRENT_PORT = 6666;
-	protected static boolean outgoingConnectionEnabled = false;
-	protected static final boolean DEBUG_FLAG = true;
+	public static String CURRENT_CHAT_NAME = "Server";
+	public static int CURRENT_PORT = 6666;
+	public static boolean outgoingConnectionEnabled = false;
+	public static final boolean DEBUG_FLAG = true;
 
 	private ServerSocket serverSocket;
 

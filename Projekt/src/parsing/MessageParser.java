@@ -1,4 +1,4 @@
-package pack;
+package parsing;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +15,8 @@ import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import pack.Main;
 
 public class MessageParser {
 

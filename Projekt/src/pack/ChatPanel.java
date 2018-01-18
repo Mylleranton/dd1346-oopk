@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import parsing.Message;
+
 /**
  *
  * ChatPanel is the backend implementation of a ChatPanelGUI that holds
