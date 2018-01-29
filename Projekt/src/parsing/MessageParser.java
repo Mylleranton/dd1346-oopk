@@ -22,10 +22,48 @@ import pack.MainGUI;
 
 public class MessageParser {
 
+	/*
+	 * https://stackoverflow.com/questions/3300839/get-a-nodes-inner-xml-as-
+	 * string-in-java-dom
+	 */
+	public static String getInnerXML(Node node, boolean html) {
+		DOMImplementationLS implementationLS = (DOMImplementationLS) node.getOwnerDocument().getImplementation()
+				.getFeature("LS", "3.0");
+		LSSerializer lsSerializer = implementationLS.createLSSerializer();
+		lsSerializer.getDomConfig().setParameter("xml-declaration", false);
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+			// Only accept tags that we can handle
+			Node child = node.getChildNodes().item(i);
+			if (node.getNodeName().equalsIgnoreCase("text") && (child.getNodeName().equalsIgnoreCase("fetstil")
+					|| child.getNodeName().equalsIgnoreCase("kursivt")
+					|| child.getNodeName().equalsIgnoreCase("#text"))) {
+				sb.append(lsSerializer.writeToString(child));
+			} else if (node.getNodeName().equalsIgnoreCase("request")) {
+				sb.append(lsSerializer.writeToString(child));
+			} else if (html) {
+				sb.append(lsSerializer.writeToString(child));
+			} else {
+				// System.out.println("Recieved unknown tag: " +
+				// child.getNodeName());
+			}
+			// System.out.println(lsSerializer.writeToString(node.getChildNodes().item(i)));
+		}
+		String retString = sb.toString();
+		if (!html) {
+			// retString.substring(retString.indexOf(">"),
+			// retString.length()-1-10);
+		} else {
+			retString = retString.trim();
+		}
+		return retString;
+
+	}
 	private DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 	private DocumentBuilder documentBuilder = null;
 	@SuppressWarnings("unused")
 	private String fileName = "/src/pack/ExampleMessage.xml";
+
 	private Message.MessageBuilder messageBuilder;
 
 	public MessageParser() {
@@ -35,6 +73,51 @@ public class MessageParser {
 			e.printStackTrace();
 		}
 
+	}
+
+	private void buildMessageFromXML(NodeList nodes) {
+
+		for (int i = 0; i < nodes.getLength(); i++) {
+			Node node = nodes.item(i);
+			// Öppnande message-tag
+			if (node.getNodeName().equalsIgnoreCase("message")) {
+				if (node.getAttributes().getNamedItem("sender") != null) {
+					messageBuilder.setMessageSender(node.getAttributes().getNamedItem("sender").getNodeValue());
+				} else {
+					// messageBuilder.setMessageSender("null");
+				}
+			}
+			// Text-tag, extrahera färg, annars välj svart
+			else if (node.getNodeName().equalsIgnoreCase("text")) {
+				if ((node.getAttributes().getNamedItem("color") != null)
+						&& node.getAttributes().getNamedItem("color").getNodeValue().matches("[#][A-F0-9]{6}")) {
+
+					messageBuilder.setTextColor(node.getAttributes().getNamedItem("color").getNodeValue());
+				} else {
+					messageBuilder.setTextColor("#000000");
+				}
+				messageBuilder.setText(getInnerXML(node, false));
+				// System.out.println(getInnerXML(node));
+			}
+			// Request-tag
+			else if (node.getNodeName().equalsIgnoreCase("request")) {
+				if (node.getAttributes().getNamedItem("reply") != null
+						&& node.getAttributes().getNamedItem("reply").getNodeValue().matches("([y][e][s]|[n][o])")) {
+					String reply = node.getAttributes().getNamedItem("reply").getNodeValue();
+					messageBuilder.setRequestAnswer((reply.equalsIgnoreCase("yes") ? true : false));
+
+				}
+				messageBuilder.setRequestText(getInnerXML(node, false));
+			}
+			// Disconnect-tag
+			else if (node.getNodeName().equalsIgnoreCase("disconnect")) {
+				messageBuilder.disconnect();
+			}
+
+			if (node.hasChildNodes()) {
+				buildMessageFromXML(node.getChildNodes());
+			}
+		}
 	}
 
 	public Message convertHTMLtoMessage(HTMLParser parser) {
@@ -76,7 +159,10 @@ public class MessageParser {
 			doc = documentBuilder.parse(bfs);
 			doc.getDocumentElement().normalize();
 		} catch (SAXException | IOException e) {
-			e.printStackTrace();
+			System.err.println("Recieved badly formatted message: ");
+			JOptionPane.showMessageDialog(MainGUI.getInstance(), "Recieved a broken message from:\n", "Broken message",
+					JOptionPane.ERROR_MESSAGE);
+			return null;
 		}
 
 		NodeList nodes = doc.getChildNodes();
@@ -94,7 +180,8 @@ public class MessageParser {
 			doc.getDocumentElement().normalize();
 		} catch (SAXException | IOException e) {
 			System.err.println("Recieved badly formatted message: " + inputString);
-			JOptionPane.showMessageDialog(MainGUI.getInstance(), "Recieved a broken message from:\n" + inputString, "Broken message", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(MainGUI.getInstance(), "Recieved a broken message from:\n" + inputString,
+					"Broken message", JOptionPane.ERROR_MESSAGE);
 			return null;
 		}
 
@@ -103,66 +190,6 @@ public class MessageParser {
 		buildMessageFromXML(nodes);
 		Message m = new Message(messageBuilder);
 		return m;
-
-	}
-
-	private void buildMessageFromXML(NodeList nodes) {
-
-		for (int i = 0; i < nodes.getLength(); i++) {
-			Node node = nodes.item(i);
-			// Öppnande message-tag
-			if (node.getNodeName().equalsIgnoreCase("message")) {
-				if (node.getAttributes().getNamedItem("sender") != null) {
-					messageBuilder.setMessageSender(node.getAttributes().getNamedItem("sender").getNodeValue());
-				} else {
-					// messageBuilder.setMessageSender("null");
-				}
-			}
-			// Text-tag, extrahera färg, annars välj svart
-			else if (node.getNodeName().equalsIgnoreCase("text")) {
-				if ((node.getAttributes().getNamedItem("color") != null)
-						&& node.getAttributes().getNamedItem("color").getNodeValue().matches("[#][A-F0-9]{6}")) {
-
-					messageBuilder.setTextColor(node.getAttributes().getNamedItem("color").getNodeValue());
-				} else {
-					messageBuilder.setTextColor("#000000");
-				}
-				messageBuilder.setText(getInnerXML(node, false));
-				// System.out.println(getInnerXML(node));
-			}
-			// Disconnect-tag
-			else if (node.getNodeName().equalsIgnoreCase("disconnect")) {
-				messageBuilder.disconnect();
-			}
-
-			if (node.hasChildNodes()) {
-				buildMessageFromXML(node.getChildNodes());
-			}
-		}
-	}
-
-	/*
-	 * https://stackoverflow.com/questions/3300839/get-a-nodes-inner-xml-as-
-	 * string-in-java-dom
-	 */
-	public static String getInnerXML(Node node, boolean html) {
-		DOMImplementationLS implementationLS = (DOMImplementationLS) node.getOwnerDocument().getImplementation()
-				.getFeature("LS", "3.0");
-		LSSerializer lsSerializer = implementationLS.createLSSerializer();
-		lsSerializer.getDomConfig().setParameter("xml-declaration", false);
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < node.getChildNodes().getLength(); i++) {
-			sb.append(lsSerializer.writeToString(node.getChildNodes().item(i)));
-			// System.out.println(lsSerializer.writeToString(node.getChildNodes().item(i)));
-		}
-		String retString = sb.toString();
-		if (!html) {
-			// retString.substring(retString.indexOf(">"),
-			// retString.length()-1-10);
-		} else {
-			retString = retString.trim();
-		}
-		return retString;
 
 	}
 

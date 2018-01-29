@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <message sender="Anton">
-<text color="FFFF11">Hejsan, exempeltext i <fetstil>fetstil</fetstil> och <kursivt>i kursivt</kursivt>.</text>
+<text color="FFFF11">Hejsan, exempeltext i <fetstil>fetstil</fetstil> och <kursivt>i kursivt</kursivt> och <anton>okänd</anton></text>
+<request reply="no">Exempel request-text</request>
 <disconnect/>
 </message>

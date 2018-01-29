@@ -34,66 +34,6 @@ public class HTMLParser {
 		document.getDocumentElement().normalize();
 	}
 
-	public void printStructure() {
-		printStructure(document.getChildNodes());
-	}
-
-	private void printStructure(NodeList nl) {
-		for (int i = 0; i < nl.getLength(); i++) {
-			System.out.println(nl.item(i).getNodeName());
-			printStructure(nl.item(i).getChildNodes());
-		}
-	}
-
-	public String getBodyContent() {
-		// getBodyNode().normalize();
-		return MessageParser.getInnerXML(getFontNode(), true);
-	}
-
-	public String getPlainBodyContent() {
-		return getBodyNode().getTextContent().trim();
-	}
-
-	public Node getBodyNode() {
-		NodeList rootNode = document.getDocumentElement().getElementsByTagName("body");
-		if (rootNode.getLength() == 0) {
-			return null;
-		}
-		return rootNode.item(0);
-	}
-
-	public Element buildNode(String input) throws SAXException {
-		Document localDoc = null;
-		try {
-			localDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-					.parse(new InputSource(new StringReader(input)));
-			return localDoc.getDocumentElement();
-		} catch (IOException | ParserConfigurationException e) {
-			e.printStackTrace();
-			return null;
-		}
-
-	}
-
-	/**
-	 * Replaces the current <body>-node with the provided newNode
-	 *
-	 * @param newNode
-	 *            The new body node.
-	 */
-	public void replaceBodyNode(Node newNode) {
-		Node parentNode = getBodyNode().getParentNode();
-		document.adoptNode(newNode);
-		parentNode.replaceChild(newNode, getBodyNode());
-	}
-
-	/**
-	 * Returns this document represented as a string
-	 */
-	public String getHTMLText() {
-		return "<html>\n" + MessageParser.getInnerXML(document.getDocumentElement(), true) + "\n</html>";
-	}
-
 	/**
 	 * Appends the formatted HTML line to the end of this documents body section
 	 * enclosed within
@@ -119,6 +59,32 @@ public class HTMLParser {
 
 	}
 
+	public Element buildNode(String input) throws SAXException {
+		Document localDoc = null;
+		try {
+			localDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+					.parse(new InputSource(new StringReader(input)));
+			return localDoc.getDocumentElement();
+		} catch (IOException | ParserConfigurationException e) {
+			e.printStackTrace();
+			return null;
+		}
+
+	}
+
+	public String getBodyContent() {
+		// getBodyNode().normalize();
+		return MessageParser.getInnerXML(getFontNode(), true);
+	}
+
+	public Node getBodyNode() {
+		NodeList rootNode = document.getDocumentElement().getElementsByTagName("body");
+		if (rootNode.getLength() == 0) {
+			return null;
+		}
+		return rootNode.item(0);
+	}
+
 	public Node getFontNode() {
 		NodeList rootNodes = document.getDocumentElement().getElementsByTagName("font");
 		if (rootNodes.getLength() == 0) {
@@ -136,5 +102,39 @@ public class HTMLParser {
 			return null;
 		}
 		return rootNodes.item(0);
+	}
+
+	/**
+	 * Returns this document represented as a string
+	 */
+	public String getHTMLText() {
+		return "<html>\n" + MessageParser.getInnerXML(document.getDocumentElement(), true) + "\n</html>";
+	}
+
+	public String getPlainBodyContent() {
+		return getBodyNode().getTextContent().trim();
+	}
+
+	public void printStructure() {
+		printStructure(document.getChildNodes());
+	}
+
+	private void printStructure(NodeList nl) {
+		for (int i = 0; i < nl.getLength(); i++) {
+			System.out.println(nl.item(i).getNodeName());
+			printStructure(nl.item(i).getChildNodes());
+		}
+	}
+
+	/**
+	 * Replaces the current <body>-node with the provided newNode
+	 *
+	 * @param newNode
+	 *            The new body node.
+	 */
+	public void replaceBodyNode(Node newNode) {
+		Node parentNode = getBodyNode().getParentNode();
+		document.adoptNode(newNode);
+		parentNode.replaceChild(newNode, getBodyNode());
 	}
 }

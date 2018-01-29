@@ -9,8 +9,8 @@ import parsing.Message;
 
 /**
  *
- * ChatPanel is the backend implementation of a ChatPanelGUI that holds
- * a number of clients (ClientThreads) and all in all represents a single chat.
+ * ChatPanel is the backend implementation of a ChatPanelGUI that holds a number
+ * of clients (ClientThreads) and all in all represents a single chat.
  *
  * On creation of a ChatPanel, it will automatically create a ChatPanelGUI
  * connected with it. Then ClientThreads can be connected to the chat by passing
@@ -25,6 +25,10 @@ public class ChatPanel {
 	private ArrayList<ClientThread> clients;
 	public boolean allClientsDisconnected = false;
 
+	public ChatPanel(String name) {
+		this(name, new ArrayList<ClientThread>());
+	}
+
 	public ChatPanel(String name, ArrayList<ClientThread> clients) {
 		this.clients = clients;
 		MainGUI.getInstance().getChats().add(this);
@@ -34,59 +38,49 @@ public class ChatPanel {
 		MainGUI.getInstance().addChatPanel(chatPanel);
 		chatPanel.getUserList().setListData(getClientDisplayNames());
 
-		//MainGUI.getInstance().setOptionPanel(chatPanel.getOptionPane());
+		// MainGUI.getInstance().setOptionPanel(chatPanel.getOptionPane());
 		// });
 	}
 
-	public ChatPanel(String name) {
-		this(name, new ArrayList<ClientThread>());
+	/**
+	 * Adds the provided thread to chatthreads internal list of clients. Should
+	 * ONLY be called from ClientThreads internal method call.
+	 * 
+	 * @param thread
+	 */
+	public void addClientThread(ClientThread thread) {
+		clients.add(thread);
+		onNameUpdate();
+		if ((clients.size() >= 1) && (chatPanel != null)) {
+			chatPanel.getUserList().setListData(getClientDisplayNames());
+		}
+		getChatPanelGUI().displayMessage(new Message(new Message.MessageBuilder().setMessageSender("SYSTEM")
+				.setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " connected.")));
+
+		// If server for multi-part chat, then relay the connection message
+		if (clients.size() > 1) {
+			sendMessageToAllButOne(thread.getID(), new Message(new Message.MessageBuilder().setMessageSender("SYSTEM")
+					.setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " connected.")));
+		}
+
+		Main.DEBUG("ChatPanel now has " + clients.size() + " clients");
+		onConnect();
 	}
 
 	/**
-	 * Sends a message to all but one client (for the pourpose when a client
-	 * sends the server a message)
-	 * 
-	 * @param clientName
-	 *            - The client the msg shouldn't be sent to
-	 * @param message
-	 *            - The message to be sent
+	 * Disconnects all active clientthreads.
 	 */
-	public void sendMessageToAllButOne(String clientID, Message message) {
-		for (ClientThread t : clients) {
-			if (t.getID() != clientID) {
-				t.sendMessage(message);
-			}
+	public void disconnectAll() {
+		allClientsDisconnected = true;
+		for (ClientThread th : clients) {
+			th.endConnection();
 		}
-	}
-
-	/**
-	 * Dispatches a message to all clients connected
-	 * 
-	 * @param message
-	 *            the message to be dispatched.
-	 */
-	public void dispatchMessage(Message message) {
-		for (ClientThread t : clients) {
-			t.sendMessage(message);
-			Main.DEBUG("Sent disconnect to " + t.getDisplayName());
-		}
-	}
-
-	/**
-	 * Dispatch a message to a particular client connected
-	 * 
-	 * @param clientName
-	 *            - The recieving client
-	 * @param message
-	 *            - The message to be sent
-	 */
-	public void sendMessageToClient(String clientID, Message message) {
-		ClientThread thread = getClientThread(clientID);
-		if (thread != null) {
-			thread.sendMessage(message);
-		} else {
-			System.out.println("Tried to send message to " + clientID + ". Could not find any client with that ID.");
-		}
+		removeAllClientThreads();
+		SwingUtilities.invokeLater(() -> {
+			JOptionPane.showMessageDialog(MainGUI.getInstance(),
+					"The connection to all clients in the chat have been terminated", "Disconnected",
+					JOptionPane.INFORMATION_MESSAGE);
+		});
 	}
 
 	/**
@@ -129,139 +123,20 @@ public class ChatPanel {
 	}
 
 	/**
-	 * Disconnects all active clientthreads.
-	 */
-	public void disconnectAll() {
-		allClientsDisconnected = true;
-		for (ClientThread th : clients) {
-			th.endConnection();
-		}
-		removeAllClientThreads();
-		SwingUtilities.invokeLater(() -> {
-			JOptionPane.showMessageDialog(MainGUI.getInstance(),
-					"The connection to all clients in the chat have been terminated", "Disconnected",
-					JOptionPane.INFORMATION_MESSAGE);
-		});
-	}
-
-	/**
-	 * Called on disconnecting all from chat. If there are no clients left, then
-	 * the chat closes.
-	 */
-	public void onDisconnectAll() {
-		if (clients.isEmpty()) {
-			MainGUI.getInstance().removeChatPanel(this);
-		}
-	}
-
-	/**
-	 * Called on any type of disconnect happening withing the chat. If there are
-	 * no clients left, then the chat closes.
-	 */
-	public void onDisconnect() {
-		if (clients.isEmpty()) {
-			chatPanel.boldButton.setEnabled(false);
-			chatPanel.colorButton.setEnabled(false);
-			chatPanel.chatSendButton.setEnabled(false);
-			chatPanel.italicsButton.setEnabled(false);
-			chatPanel.kickButton.setEnabled(false);
-			chatPanel.displayMessage(new Message(new Message.MessageBuilder().setMessageSender("SYSTEM")
-					.setTextColor("#FF0000").setText("CHAT EMPTY - NO CLIENTS LEFT")));
-			getChatPanelGUI().endChatButton.setText("Stäng chatt");
-		}
-	}
-
-	private void onConnect() {
-		if (!clients.isEmpty()) {
-			chatPanel.boldButton.setEnabled(true);
-			chatPanel.colorButton.setEnabled(true);
-			chatPanel.chatSendButton.setEnabled(true);
-			chatPanel.italicsButton.setEnabled(true);
-		}
-	}
-
-	/**
-	 * Called whenever an associated ClientThread gets an updated display name
-	 */
-	public void onNameUpdate() {
-		// One client, then we name the chat the name of that client
-		String newName = "";
-		if (clients.size() == 1) {
-			newName = clients.get(0).getDisplayName();
-		}
-		// Several clients
-		else if (clients.size() > 1) {
-			newName = clients.get(0).getDisplayName().concat(" m.fl.");
-		}
-		int index = MainGUI.getInstance().getTabbedPane().indexOfComponent(getChatPanelGUI());
-		if ((index >= 0) && !newName.equalsIgnoreCase("")) {
-			MainGUI.getInstance().getTabbedPane().setTitleAt(index, newName);
-			chatPanel.setName(newName);
-		}
-
-		// Display as much information about the connected clients as possible!
-
-		chatPanel.getUserList().setListData(getClientQualifiedNames());
-	}
-
-	public ArrayList<ClientThread> getClients() {
-		return clients;
-	}
-
-	/**
-	 * Adds the provided thread to chatthreads internal list of clients. Should
-	 * ONLY be called from ClientThreads internal method call.
+	 * Dispatches a message to all clients connected
 	 * 
-	 * @param thread
+	 * @param message
+	 *            the message to be dispatched.
 	 */
-	public void addClientThread(ClientThread thread) {
-		clients.add(thread);
-		onNameUpdate();
-		if ((clients.size() >= 1) && (chatPanel != null)) {
-			chatPanel.getUserList().setListData(getClientDisplayNames());
+	public void dispatchMessage(Message message) {
+		for (ClientThread t : clients) {
+			t.sendMessage(message);
+			if (message.disconnect()) {
+				Main.DEBUG("Sent disconnect to " + t.getDisplayName());
+			}
+
 		}
-		getChatPanelGUI().displayMessage(new Message(new Message.MessageBuilder().setMessageSender("SYSTEM")
-				.setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " connected.")));
-
-		// If server for multi-part chat, then relay the connection message
-		if (clients.size() > 1) {
-			sendMessageToAllButOne(thread.getID(), new Message(new Message.MessageBuilder().setMessageSender("SYSTEM")
-					.setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " connected.")));
-		}
-
-		Main.DEBUG("ChatPanel now has " + clients.size() + " clients");
-		onConnect();
 	}
-
-	public void removeClientThread(ClientThread thread) {
-		clients.remove(thread);
-		onNameUpdate();
-		chatPanel.getUserList().setListData(getClientDisplayNames());
-		getChatPanelGUI().displayMessage(new Message(new Message.MessageBuilder().setMessageSender("SYSTEM")
-				.setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " disconnected.")));
-
-		// If server for multi-part chat, then relay the disconnect message
-		if (clients.size() > 0) {
-			sendMessageToAllButOne(thread.getID(), new Message(new Message.MessageBuilder().setMessageSender("SYSTEM")
-					.setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " disconnected.")));
-		}
-
-		Main.DEBUG("ChatPanel now has " + clients.size() + " clients");
-		onDisconnect();
-	}
-
-	public void removeAllClientThreads() {
-		clients = new ArrayList<ClientThread>();
-		onNameUpdate();
-		chatPanel.getUserList().setListData(getClientDisplayNames());
-		
-		Main.DEBUG("ChatPanel now has " + clients.size() + " clients");
-		onDisconnect();
-	}
-
-	////////////////////////////
-	// GETTERS AND SETTERS //
-	////////////////////////////
 
 	public ChatPanelGUI getChatPanelGUI() {
 		return chatPanel;
@@ -315,28 +190,8 @@ public class ChatPanel {
 		return qualifiedNames;
 	}
 
-	/**
-	 * Get client ID from a qualified name
-	 * 
-	 * @param qual
-	 *            - The qualified name
-	 * @return
-	 */
-	public String getIDfromQualifiedName(String qual) {
-		String[] dispNames = getClientDisplayNames();
-		String[] IDs = getClientIDs();
-		for (String ip : IDs) {
-			if (qual.equalsIgnoreCase(ip)) {
-				return ip;
-			}
-		}
-
-		for (int i = 0; i < IDs.length; i++) {
-			if (qual.startsWith(dispNames[i]) && qual.endsWith("(" + IDs[i] + ")")) {
-				return IDs[i];
-			}
-		}
-		return null;
+	public ArrayList<ClientThread> getClients() {
+		return clients;
 	}
 
 	/**
@@ -363,6 +218,154 @@ public class ChatPanel {
 			}
 		}
 		return thread;
+	}
+
+	/**
+	 * Get client ID from a qualified name
+	 * 
+	 * @param qual
+	 *            - The qualified name
+	 * @return
+	 */
+	public String getIDfromQualifiedName(String qual) {
+		String[] dispNames = getClientDisplayNames();
+		String[] IDs = getClientIDs();
+		for (String ip : IDs) {
+			if (qual.equalsIgnoreCase(ip)) {
+				return ip;
+			}
+		}
+
+		for (int i = 0; i < IDs.length; i++) {
+			if (qual.startsWith(dispNames[i]) && qual.endsWith("(" + IDs[i] + ")")) {
+				return IDs[i];
+			}
+		}
+		return null;
+	}
+
+	private void onConnect() {
+		if (!clients.isEmpty()) {
+			chatPanel.boldButton.setEnabled(true);
+			chatPanel.colorButton.setEnabled(true);
+			chatPanel.chatSendButton.setEnabled(true);
+			chatPanel.italicsButton.setEnabled(true);
+		}
+	}
+
+	/**
+	 * Called on any type of disconnect happening withing the chat. If there are
+	 * no clients left, then the chat closes.
+	 */
+	public void onDisconnect() {
+		if (clients.isEmpty()) {
+			chatPanel.boldButton.setEnabled(false);
+			chatPanel.colorButton.setEnabled(false);
+			chatPanel.chatSendButton.setEnabled(false);
+			chatPanel.italicsButton.setEnabled(false);
+			chatPanel.kickButton.setEnabled(false);
+			chatPanel.displayMessage(new Message(new Message.MessageBuilder().setMessageSender("SYSTEM")
+					.setTextColor("#FF0000").setText("CHAT EMPTY - NO CLIENTS LEFT")));
+			getChatPanelGUI().endChatButton.setText("Stäng chatt");
+		}
+	}
+
+	////////////////////////////
+	// GETTERS AND SETTERS //
+	////////////////////////////
+
+	/**
+	 * Called on disconnecting all from chat. If there are no clients left, then
+	 * the chat closes.
+	 */
+	public void onDisconnectAll() {
+		if (clients.isEmpty()) {
+			MainGUI.getInstance().removeChatPanel(this);
+		}
+	}
+
+	/**
+	 * Called whenever an associated ClientThread gets an updated display name
+	 */
+	public void onNameUpdate() {
+		// One client, then we name the chat the name of that client
+		String newName = "";
+		if (clients.size() == 1) {
+			newName = clients.get(0).getDisplayName();
+		}
+		// Several clients
+		else if (clients.size() > 1) {
+			newName = clients.get(0).getDisplayName().concat(" m.fl.");
+		}
+		int index = MainGUI.getInstance().getTabbedPane().indexOfComponent(getChatPanelGUI());
+		if ((index >= 0) && !newName.equalsIgnoreCase("")) {
+			MainGUI.getInstance().getTabbedPane().setTitleAt(index, newName);
+			chatPanel.setName(newName);
+		}
+
+		// Display as much information about the connected clients as possible!
+
+		chatPanel.getUserList().setListData(getClientQualifiedNames());
+	}
+
+	public void removeAllClientThreads() {
+		clients = new ArrayList<ClientThread>();
+		onNameUpdate();
+		chatPanel.getUserList().setListData(getClientDisplayNames());
+
+		Main.DEBUG("ChatPanel now has " + clients.size() + " clients");
+		onDisconnect();
+	}
+
+	public void removeClientThread(ClientThread thread) {
+		clients.remove(thread);
+		onNameUpdate();
+		chatPanel.getUserList().setListData(getClientDisplayNames());
+		getChatPanelGUI().displayMessage(new Message(new Message.MessageBuilder().setMessageSender("SYSTEM")
+				.setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " disconnected.")));
+
+		// If server for multi-part chat, then relay the disconnect message
+		if (clients.size() > 0) {
+			sendMessageToAllButOne(thread.getID(), new Message(new Message.MessageBuilder().setMessageSender("SYSTEM")
+					.setTextColor("#FF0000").setText("User " + thread.getDisplayName() + " disconnected.")));
+		}
+
+		Main.DEBUG("ChatPanel now has " + clients.size() + " clients");
+		onDisconnect();
+	}
+
+	/**
+	 * Sends a message to all but one client (for the pourpose when a client
+	 * sends the server a message)
+	 * 
+	 * @param clientName
+	 *            - The client the msg shouldn't be sent to
+	 * @param message
+	 *            - The message to be sent
+	 */
+	public void sendMessageToAllButOne(String clientID, Message message) {
+		for (ClientThread t : clients) {
+			if (t.getID() != clientID) {
+				t.sendMessage(message);
+			}
+		}
+	}
+
+	/**
+	 * Dispatch a message to a particular client connected
+	 * 
+	 * @param clientName
+	 *            - The recieving client
+	 * @param message
+	 *            - The message to be sent
+	 */
+	public void sendMessageToClient(String clientID, Message message) {
+		ClientThread thread = getClientThread(clientID);
+		if (thread != null) {
+			thread.sendMessage(message);
+		} else {
+			System.out.println("Tried to send message to " + clientID + ". Could not find any client with that ID.");
+		}
 	}
 
 	@Override
