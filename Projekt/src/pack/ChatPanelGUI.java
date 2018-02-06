@@ -233,11 +233,11 @@ public class ChatPanelGUI extends JPanel {
 				String closeTag = "</" + tag + ">";
 				String bodyContent = p.getBodyContent();
 				Main.DEBUG(bodyContent);
-				Main.DEBUG("offsetStart: " + (offsetStart + start) + " offsetEnd: " + (offsetEnd + end));
+				Main.DEBUG("Selected word between indices: " + (offsetStart + start) + " and " + (offsetEnd + end));
 				Main.DEBUG("Selected word: " + bodyContent.substring(start + offsetStart, end + offsetEnd));
 
-				// Selected word starts at index start+offset and ends at
-				// end+offset
+				// Selected word starts at index start+offsetStart and ends at
+				// end+offsetEnd
 				// first end tag after word, first start tag before word
 				int prevOpenTag = bodyContent.substring(0, (start + offsetStart) > 0 ? start + offsetStart : 3)
 						.lastIndexOf(openTag);
@@ -331,36 +331,44 @@ public class ChatPanelGUI extends JPanel {
 		 * @param endIndex
 		 *            - The index to end at
 		 * @return The number of characters differing the plain and html
-		 *         represenation
+		 *         represenation up to endIndex in the plain text
 		 */
-		private int preceededTagIndices(String plain, String html, int endIndex) {
-
+		private int preceededTagIndices(String plain, String html, int endIndex) {			
+			Main.DEBUG("Comparing plain: " + plain + " with html " + html);
 			int pl = 0;
 			int ht = 0;
-			for (; pl < endIndex; pl++) {
-				// System.out.println("Comparing " + plain.charAt(pl) + " with "
-				// + html.charAt(ht));
-				if (plain.charAt(pl) == html.charAt(ht)) {
+			if(endIndex == 0) {
+				endIndex++;
+			}
+			while (pl < endIndex) {
+				
+				if(plain.charAt(pl) == html.charAt(ht)) {
+					pl++;
 					ht++;
 					continue;
-				} else if ((ht + 2) > (html.length() - 1)) {
-					break;
-				} else if ((html.charAt(ht) == '<') && ((html.charAt(ht + 1) == 'b') || (html.charAt(ht + 1) == 'i'))) {
-					ht += 3;
-					pl--;
-					continue;
-				} else if (((html.charAt(ht) == '<') && ((html.charAt(ht + 2) == 'b') || (html.charAt(ht + 2) == 'i')))
-						&& (html.charAt(ht + 1) == '/')) {
-					ht += 4;
-					pl--;
-					continue;
+				} else if (html.charAt(ht) == '<') {
+					while (html.charAt(ht) != '>') {
+						
+						ht++;
+					}
+					ht++;
+				} else if (html.charAt(ht) == '&') {
+					while(html.charAt(ht) != ';') {
+						ht++;
+					}
+					ht++;
+					pl++;
+				} else {
+					ht++;
 				}
 			}
-			// System.out.println(ht-pl);
-			return ht - pl;
+			Main.DEBUG("Result: " + (ht-pl));
+			return ht-pl;
 		}
 
 	}
+	
+	
 	private JTextPane chatDisplayPane;
 
 	private JTextPane chatTypingPane;

@@ -20,11 +20,35 @@ import org.xml.sax.SAXException;
 import pack.Main;
 import pack.MainGUI;
 
+
+/**
+ * 
+ * MessageParser implements the functions for reading and parsing probable
+ * XML-strings and files by the Document classes in java.
+ * 
+ * Uses a javax.xml.parsers.DocumentBuilder to build a org.w3c.dom.Document corresponding to the
+ * XML-string provided. Uses the DOM/SAX implementation.
+ * 
+ * 
+ * @author anton
+ *
+ */
 public class MessageParser {
 
 	/*
+	 * TAKEN FROM:
 	 * https://stackoverflow.com/questions/3300839/get-a-nodes-inner-xml-as-
 	 * string-in-java-dom
+	 * 
+	 * With slight modification by @anton
+	 */
+	/**
+	 * Static method for extracting the inner XML data as a pure string 
+	 * from a DOM Document Node.
+	 * 
+	 * @param node - The node to extract the XML from
+	 * @param html - Are we reading pure HTML? (false for XML)
+	 * @return A string containing the XML representation of the Node
 	 */
 	public static String getInnerXML(Node node, boolean html) {
 		DOMImplementationLS implementationLS = (DOMImplementationLS) node.getOwnerDocument().getImplementation()
@@ -32,11 +56,14 @@ public class MessageParser {
 		LSSerializer lsSerializer = implementationLS.createLSSerializer();
 		lsSerializer.getDomConfig().setParameter("xml-declaration", false);
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+		
+		for (int i = 0; i < node.getChildNodes().getLength(); i++) {	
 			// Only accept tags that we can handle
 			Node child = node.getChildNodes().item(i);
+			//Main.DEBUG("Node: " + node.getNodeName() + " with child " + child.getNodeName());
+			
 			if (node.getNodeName().equalsIgnoreCase("text") && (child.getNodeName().equalsIgnoreCase("fetstil")
-					|| child.getNodeName().equalsIgnoreCase("kursivt")
+					|| child.getNodeName().equalsIgnoreCase("kursiv")
 					|| child.getNodeName().equalsIgnoreCase("#text"))) {
 				sb.append(lsSerializer.writeToString(child));
 			} else if (node.getNodeName().equalsIgnoreCase("request")) {
@@ -59,6 +86,7 @@ public class MessageParser {
 		return retString;
 
 	}
+	
 	private DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 	private DocumentBuilder documentBuilder = null;
 	@SuppressWarnings("unused")
@@ -66,6 +94,9 @@ public class MessageParser {
 
 	private Message.MessageBuilder messageBuilder;
 
+	/**
+	 * Instansiates the parser with a documentbuilder.
+	 */
 	public MessageParser() {
 		try {
 			documentBuilder = builderFactory.newDocumentBuilder();
@@ -75,6 +106,11 @@ public class MessageParser {
 
 	}
 
+	/**
+	 *  Recursive building of a message by parsing all subnodes and extracting 
+	 *  the relevant tag data. 
+	 * @param nodes - The nodelist containing the nodes to be parsed
+	 */
 	private void buildMessageFromXML(NodeList nodes) {
 
 		for (int i = 0; i < nodes.getLength(); i++) {
@@ -120,6 +156,13 @@ public class MessageParser {
 		}
 	}
 
+	/**
+	 * Converts a HTML-string to a Message (used when sending a message on the extracted HTML from
+	 * the JTextArea) by parsing it!
+	 * 
+	 * @param parser - The HTMLParser which have parsed the HTML string that contains the message
+	 * @return A message containg the data the parser did
+	 */
 	public Message convertHTMLtoMessage(HTMLParser parser) {
 		messageBuilder = new Message.MessageBuilder();
 		messageBuilder.setMessageSender(Main.CURRENT_CHAT_NAME);
@@ -152,7 +195,12 @@ public class MessageParser {
 
 	}
 
-	@SuppressWarnings("unused")
+	/**
+	 * Overloaded function. Same functionality as parseInputStream(String), but parses a file instead.
+	 * 
+	 * @param bfs
+	 * @return
+	 */
 	public Message parseInputStream(File bfs) {
 		Document doc = null;
 		try {
@@ -173,6 +221,12 @@ public class MessageParser {
 
 	}
 
+	/**
+	 * Parses the provided String to a Message
+	 *  
+	 * @param inputString - The string to parse
+	 * @return A Message object containing the data from the string.
+	 */
 	public Message parseInputStream(String inputString) {
 		Document doc = null;
 		try {

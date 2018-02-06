@@ -25,28 +25,34 @@ public class ChatPanel {
 	private ArrayList<ClientThread> clients;
 	public boolean allClientsDisconnected = false;
 
+	/**
+	 * Calls ChatPanel(String,ArrayList(ClientThread)) with an empty list
+	 * @param name
+	 */
 	public ChatPanel(String name) {
 		this(name, new ArrayList<ClientThread>());
 	}
 
+	/**
+	 * Creates a new ChatPanel that initiates a new ChatPanelGUI 
+	 * @param name - The unique name of the panel
+	 * @param clients - A list of clientThreads connected to this specific chatpanel
+	 */
 	public ChatPanel(String name, ArrayList<ClientThread> clients) {
 		this.clients = clients;
 		MainGUI.getInstance().getChats().add(this);
 
-		// SwingUtilities.invokeLater(() -> {
 		chatPanel = new ChatPanelGUI(name, this);
 		MainGUI.getInstance().addChatPanel(chatPanel);
 		chatPanel.getUserList().setListData(getClientDisplayNames());
 
-		// MainGUI.getInstance().setOptionPanel(chatPanel.getOptionPane());
-		// });
 	}
 
 	/**
 	 * Adds the provided thread to chatthreads internal list of clients. Should
 	 * ONLY be called from ClientThreads internal method call.
 	 * 
-	 * @param thread
+	 * @param thread - The thread to be added
 	 */
 	public void addClientThread(ClientThread thread) {
 		clients.add(thread);
@@ -138,13 +144,17 @@ public class ChatPanel {
 		}
 	}
 
+	/**
+	 * 
+	 * @return The ChatPanelGUI of this ChatPanel
+	 */
 	public ChatPanelGUI getChatPanelGUI() {
 		return chatPanel;
 	}
 
 	/**
 	 * Returns an array with the connected ClientThreads displaynames, which can
-	 * be either their IP or a user set name.
+	 * be either their IP or a user set name (see ClientThread.getDisplayName())
 	 * 
 	 * @return
 	 */
@@ -190,14 +200,19 @@ public class ChatPanel {
 		return qualifiedNames;
 	}
 
+	/**
+	 * Get the ArrayList containing all connected ClientThreads to this
+	 * specific chatpanel
+	 * @return
+	 */
 	public ArrayList<ClientThread> getClients() {
 		return clients;
 	}
 
 	/**
-	 * Return the clientthread with name name
+	 * Return the clientthread with name ID
 	 * 
-	 * @param name
+	 * @param ID
 	 * @return The assiociated ClientThread if found, otherwise null
 	 */
 	private ClientThread getClientThread(String ID) {
@@ -244,6 +259,9 @@ public class ChatPanel {
 		return null;
 	}
 
+	/**
+	 * Update function that is called whenever a client connects
+	 */
 	private void onConnect() {
 		if (!clients.isEmpty()) {
 			chatPanel.boldButton.setEnabled(true);
@@ -270,9 +288,6 @@ public class ChatPanel {
 		}
 	}
 
-	////////////////////////////
-	// GETTERS AND SETTERS //
-	////////////////////////////
 
 	/**
 	 * Called on disconnecting all from chat. If there are no clients left, then
@@ -308,6 +323,10 @@ public class ChatPanel {
 		chatPanel.getUserList().setListData(getClientQualifiedNames());
 	}
 
+	
+	/**
+	 * Remove all connected clientthreads
+	 */
 	public void removeAllClientThreads() {
 		clients = new ArrayList<ClientThread>();
 		onNameUpdate();
@@ -317,6 +336,13 @@ public class ChatPanel {
 		onDisconnect();
 	}
 
+	
+	/**
+	 * Removes a ClientThread from the chatpanel. Should only be called from the internal functions of
+	 * ClientThread. 
+	 * 
+	 * @param thread - The thread to remove
+	 */
 	public void removeClientThread(ClientThread thread) {
 		clients.remove(thread);
 		onNameUpdate();
@@ -336,7 +362,7 @@ public class ChatPanel {
 
 	/**
 	 * Sends a message to all but one client (for the pourpose when a client
-	 * sends the server a message)
+	 * sends the server a message to be relayed)
 	 * 
 	 * @param clientName
 	 *            - The client the msg shouldn't be sent to

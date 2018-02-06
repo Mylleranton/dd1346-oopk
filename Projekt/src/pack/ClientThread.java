@@ -35,7 +35,15 @@ public class ClientThread extends Thread {
 	private BufferedWriter buffWriter;
 	private BufferedReader buffReader;
 	private ChatPanel chatPanel;
+	/**
+	 * Null if client have not been approved/rejected yet, otherwise it reflects wether the client
+	 * have been approved (true) or rejected (false)
+	 */
 	public Boolean approved = null;
+	
+	/**
+	 * Is the client a simple client or not (simple = have B1 implemented and can send/handle request-tags)
+	 */
 	public boolean simple = true;
 
 	private Timer timer;
@@ -69,7 +77,9 @@ public class ClientThread extends Thread {
 	}
 
 	/**
-	 * Try to accept request-tags!
+	 * Try to accept request-tags, and if non are sent, then we handle
+	 * treating the client as a simple one!
+	 * 
 	 */
 	private void approveClient() {
 		String errorMsg;
@@ -245,7 +255,8 @@ public class ClientThread extends Thread {
 
 	/**
 	 * Starts a thread and initializes the communication sockets. Will wait
-	 * indefinitely for packets
+	 * indefinitely for packets, and handle incoming packets accordingly (parse
+	 * them as messages).
 	 */
 	@Override
 	public void run() {
@@ -289,7 +300,7 @@ public class ClientThread extends Thread {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (approved == null && !socket.isClosed()) {
-						setConnectionPromptAnswer(true);
+						setConnectionPromptAnswer(null, true);
 					}
 					Main.DEBUG("No <request> recieved. Treating client like a simple one.");
 				}
@@ -308,7 +319,7 @@ public class ClientThread extends Thread {
 
 	/**
 	 * The loop waiting for incoming packets from connected clients. Starts with
-	 * the thread.
+	 * the thread as soon as the thread has been validated!
 	 */
 	private void runClientThread() {
 		String errorMsg = "";
@@ -377,14 +388,20 @@ public class ClientThread extends Thread {
 		}
 	}
 
-	private void setConnectionPromptAnswer(boolean simple) {
-		Message msg = new Message(
-				new Message.MessageBuilder().setMessageSender(socket.getInetAddress().getHostAddress()));
-		setConnectionPromptAnswer(msg, simple);
-	}
-
+	/**
+	 * Asks the user if a connection should be allowed or not, and sets the approved
+	 * flag accordingly. 
+	 * @param msg  - The message to display to the user that was send with the request (can be null if simple client)
+	 * @param simple - Is the client a simple (not B1 standard)?
+	 */
 	private void setConnectionPromptAnswer(Message msg, boolean simple) {
+		if(msg == null) {
+			msg = new Message(
+					new Message.MessageBuilder().setMessageSender(socket.getInetAddress().getHostAddress()));
+		}
+		
 		Main.DEBUG("Validating answer for message: " + msg.getMessage() + " from client simlpe: " + simple);
+		
 		int answer = JOptionPane.showConfirmDialog(MainGUI.getInstance(),
 				"An incoming connection from: " + socket.getInetAddress().getHostAddress() + " with display name \""
 						+ msg.getSender() + "\" has been detected."

@@ -1,7 +1,22 @@
 package parsing;
 
+/**
+ * 
+ * Object that holds a representation of an XML-message.
+ * Provides nice programming features. Instansiated by a 
+ * MessageBuilder.
+ * 
+ * @author anton
+ *
+ */
 public class Message {
 
+	/**
+	 * The static messageBuilder is used to build a message from
+	 * scratch and can then be converted into a message object
+	 * @author anton
+	 *
+	 */
 	public static class MessageBuilder {
 		private String M_SENDER;
 		private String T_COLOR;
@@ -45,12 +60,12 @@ public class Message {
 			return this;
 		}
 	}
+	
 	private final String MESSAGE_SENDER;
 	private final String TEXT_COLOR;
 	private final String TEXT;
 	private final boolean DISCONNECT;
 	private final String REQ_TEXT;
-
 	private final Boolean REQ_ANSWER;
 
 	public Message(MessageBuilder m) {
@@ -109,7 +124,6 @@ public class Message {
 			sb.append("<disconnect/>");
 		}
 
-		// sb.append("</message>" + System.lineSeparator());
 		sb.append("</message>");
 
 		return sb.toString();

@@ -41,7 +41,7 @@ public class Main {
 	public static int CURRENT_PORT = 6666;
 	public static boolean outgoingConnectionEnabled = false;
 
-	public static final boolean DEBUG_FLAG = true;
+	public static final boolean DEBUG_FLAG = false;
 
 	/**
 	 * Utility used for displaying DEBUG messages. Prints verbose iff debug_flag
@@ -66,7 +66,8 @@ public class Main {
 	}
 
 	/**
-	 * Main method
+	 * Main method. Holds reference to the MainGUI, that, when initiated,
+	 * starts the GUI and program.
 	 * 
 	 * @param args
 	 */
@@ -74,15 +75,12 @@ public class Main {
 		@SuppressWarnings("unused")
 		MainGUI mainGUI_instance = MainGUI.getInstance();
 
-		Message m = new MessageParser()
-				.parseInputStream(new File(System.getProperty("user.dir") + "/src/parsing/ExampleMessage.xml"));
-		System.out.println(m.getMessage());
 	}
 
 	private ServerSocket serverSocket;
 
 	/**
-	 * Adds the provided Socket to a multi-part chat
+	 * Adds the provided Socket to the multi-part chat
 	 *
 	 * @param conn
 	 *            - The socket to add
@@ -143,13 +141,13 @@ public class Main {
 	}
 
 	/**
-	 * Starts a new chat with the ip and port provided as a client SHOULD NOT
-	 * RUN ON SWING THREAD
+	 * Connects to the provided host and returns the connection
 	 *
 	 * @param ip
 	 *            - The IP address to connect with
 	 * @param port
 	 *            - The port to connect to
+	 * @return The connection socket
 	 */
 	public Socket connectToHost(String ip, String port) {
 		Socket connection = null;
@@ -170,7 +168,14 @@ public class Main {
 		return connection;
 
 	}
-
+	
+	/**
+	 *  Same functionality as connectToHost except that this function
+	 *  takes a requestText to send with the connection, and waits
+	 *  for a response!
+	 * @param conn
+	 * @param requestText
+	 */
 	public void connectToUserWithRequest(Socket conn, String requestText) {
 		Main.DEBUG("Creating a new chat and sending request message");
 		ChatPanel chatPanel = new ChatPanel(
@@ -187,7 +192,7 @@ public class Main {
 
 			@Override
 			protected Void doInBackground() throws Exception {
-				Thread.sleep(2 * 1000);
+				Thread.sleep(1 * 1000);
 
 				Main.DEBUG("Sending request-message");
 				Message requestMessage = new Message(
@@ -294,8 +299,8 @@ public class Main {
 		ClientThread thread = new ClientThread(inConn);
 		thread.start();
 
-		// Check for answer every second if we have not recieved one
-		Timer timer = new Timer(1 * 1000, new ActionListener() {
+		// Check for answer every 1/2-second if we have not recieved one
+		Timer timer = new Timer(1 * 500, new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
