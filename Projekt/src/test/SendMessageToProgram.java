@@ -20,7 +20,7 @@ public class SendMessageToProgram {
 	public void test() {
 
 		Socket connection = null;
-		String ip = "192.168.0.118";
+		String ip = "130.229.150.15";
 		String port = "6666";
 		
 		try {
