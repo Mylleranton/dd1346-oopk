@@ -21,10 +21,6 @@ import parsing.Message;
  */
 public class ChatPanel {
 
-	private ChatPanelGUI chatPanel;
-	private ArrayList<ClientThread> clients;
-	public boolean allClientsDisconnected = false;
-
 	/**
 	 * Calls ChatPanel(String,ArrayList(ClientThread)) with an empty list
 	 * @param name
@@ -32,7 +28,6 @@ public class ChatPanel {
 	public ChatPanel(String name) {
 		this(name, new ArrayList<ClientThread>());
 	}
-
 	/**
 	 * Creates a new ChatPanel that initiates a new ChatPanelGUI 
 	 * @param name - The unique name of the panel
@@ -47,6 +42,11 @@ public class ChatPanel {
 		chatPanel.getUserList().setListData(getClientDisplayNames());
 
 	}
+	private ChatPanelGUI chatPanel;
+
+	private ArrayList<ClientThread> clients;
+
+	public boolean allClientsDisconnected = false;
 
 	/**
 	 * Adds the provided thread to chatthreads internal list of clients. Should

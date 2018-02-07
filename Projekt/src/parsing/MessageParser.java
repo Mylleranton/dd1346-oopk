@@ -35,6 +35,25 @@ import pack.MainGUI;
  */
 public class MessageParser {
 
+	/**
+	 * Instansiates the parser with a documentbuilder.
+	 */
+	public MessageParser() {
+		try {
+			documentBuilder = builderFactory.newDocumentBuilder();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+	private DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+	private DocumentBuilder documentBuilder = null;
+	@SuppressWarnings("unused")
+	private String fileName = "/src/pack/ExampleMessage.xml";
+
+	private Message.MessageBuilder messageBuilder;
+
 	/*
 	 * TAKEN FROM:
 	 * https://stackoverflow.com/questions/3300839/get-a-nodes-inner-xml-as-
@@ -84,25 +103,6 @@ public class MessageParser {
 			retString = retString.trim();
 		}
 		return retString;
-
-	}
-	
-	private DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-	private DocumentBuilder documentBuilder = null;
-	@SuppressWarnings("unused")
-	private String fileName = "/src/pack/ExampleMessage.xml";
-
-	private Message.MessageBuilder messageBuilder;
-
-	/**
-	 * Instansiates the parser with a documentbuilder.
-	 */
-	public MessageParser() {
-		try {
-			documentBuilder = builderFactory.newDocumentBuilder();
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
-		}
 
 	}
 

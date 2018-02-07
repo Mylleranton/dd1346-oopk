@@ -37,11 +37,14 @@ public class Main {
 	public static class MainHolder {
 		private static final Main INSTANCE = new Main();
 	}
+	
 	public static String CURRENT_CHAT_NAME = "Server";
 	public static int CURRENT_PORT = 6666;
 	public static boolean outgoingConnectionEnabled = false;
 
-	public static final boolean DEBUG_FLAG = false;
+	public static final boolean DEBUG_FLAG = true;
+
+	private ServerSocket serverSocket;
 
 	/**
 	 * Utility used for displaying DEBUG messages. Prints verbose iff debug_flag
@@ -76,8 +79,6 @@ public class Main {
 		MainGUI mainGUI_instance = MainGUI.getInstance();
 
 	}
-
-	private ServerSocket serverSocket;
 
 	/**
 	 * Adds the provided Socket to the multi-part chat

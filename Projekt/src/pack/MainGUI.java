@@ -51,30 +51,6 @@ public class MainGUI extends JFrame {
 		private static final MainGUI INSTANCE = new MainGUI();
 	}
 	/**
-	 * Width of the final GUI
-	 */
-	public static int WIDTH = 800;
-
-	/**
-	 * Height of the final GUI
-	 */
-	public static int HEIGHT = 540;
-	/**
-	 * Singleton instance of MainGUI
-	 *
-	 * @return the instance
-	 */
-	public static MainGUI getInstance() {
-		return MainGUIHolder.INSTANCE;
-	}
-	private JTabbedPane chatPanel;
-	private JPanel buttonPanel;
-
-	private JPanel optionPanel;
-
-	private ArrayList<ChatPanel> chats = new ArrayList<ChatPanel>();
-
-	/**
 	 * Initialize graphics and register all listeners
 	 */
 	private MainGUI() {
@@ -163,6 +139,30 @@ public class MainGUI extends JFrame {
 		pack();
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setVisible(true);
+	}
+
+	/**
+	 * Width of the final GUI
+	 */
+	public static int WIDTH = 800;
+	/**
+	 * Height of the final GUI
+	 */
+	public static int HEIGHT = 540;
+	private JTabbedPane chatPanel;
+	private JPanel buttonPanel;
+
+	private JPanel optionPanel;
+
+	private ArrayList<ChatPanel> chats = new ArrayList<ChatPanel>();
+
+	/**
+	 * Singleton instance of MainGUI
+	 *
+	 * @return the instance
+	 */
+	public static MainGUI getInstance() {
+		return MainGUIHolder.INSTANCE;
 	}
 
 	/**

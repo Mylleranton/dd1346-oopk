@@ -61,13 +61,6 @@ public class Message {
 		}
 	}
 	
-	private final String MESSAGE_SENDER;
-	private final String TEXT_COLOR;
-	private final String TEXT;
-	private final boolean DISCONNECT;
-	private final String REQ_TEXT;
-	private final Boolean REQ_ANSWER;
-
 	public Message(MessageBuilder m) {
 		MESSAGE_SENDER = m.M_SENDER;
 		TEXT = m.TEXT;
@@ -76,6 +69,13 @@ public class Message {
 		REQ_TEXT = m.REQ_TEXT;
 		REQ_ANSWER = m.REQ_ANS;
 	}
+	private final String MESSAGE_SENDER;
+	private final String TEXT_COLOR;
+	private final String TEXT;
+	private final boolean DISCONNECT;
+	private final String REQ_TEXT;
+
+	private final Boolean REQ_ANSWER;
 
 	public boolean disconnect() {
 		return DISCONNECT;

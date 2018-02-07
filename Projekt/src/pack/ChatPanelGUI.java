@@ -369,25 +369,6 @@ public class ChatPanelGUI extends JPanel {
 	}
 	
 	
-	private JTextPane chatDisplayPane;
-
-	private JTextPane chatTypingPane;
-	private JPanel optionPane;
-	private JList<String> userList;
-
-	JButton italicsButton;
-
-	JButton boldButton;
-	JButton colorButton;
-
-	JButton chatSendButton;
-
-	JButton endChatButton;
-
-	JButton kickButton;
-
-	private ChatPanel chatPanel;
-
 	/**
 	 * Initializes a new chatpanelgui with an associated name and chatthread
 	 *
@@ -402,6 +383,25 @@ public class ChatPanelGUI extends JPanel {
 		initializeGUI();
 		setupOptionPane();
 	}
+
+	private JTextPane chatDisplayPane;
+	private JTextPane chatTypingPane;
+	private JPanel optionPane;
+
+	private JList<String> userList;
+
+	JButton italicsButton;
+	JButton boldButton;
+
+	JButton colorButton;
+
+	JButton chatSendButton;
+
+	JButton endChatButton;
+
+	JButton kickButton;
+
+	private ChatPanel chatPanel;
 
 	/**
 	 * Displays an incoming message to the chat GUI

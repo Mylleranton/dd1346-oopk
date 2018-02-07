@@ -24,11 +24,6 @@ import org.xml.sax.SAXException;
  */
 public class HTMLParser {
 
-	private String htmlString;
-	private DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-	private DocumentBuilder documentBuilder = null;
-	private Document document = null;
-
 	/**
 	 * Instansiates the parser and tries to parse the provided String.
 	 * 
@@ -47,6 +42,11 @@ public class HTMLParser {
 		}
 		document.getDocumentElement().normalize();
 	}
+	private String htmlString;
+	private DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+	private DocumentBuilder documentBuilder = null;
+
+	private Document document = null;
 
 	/**
 	 * Appends the formatted HTML line to the end of this documents body section

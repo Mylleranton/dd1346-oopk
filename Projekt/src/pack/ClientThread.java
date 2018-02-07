@@ -29,25 +29,6 @@ import parsing.MessageParser;
  */
 public class ClientThread extends Thread {
 
-	private Socket socket;
-	private String name = "";
-	private String ID;
-	private BufferedWriter buffWriter;
-	private BufferedReader buffReader;
-	private ChatPanel chatPanel;
-	/**
-	 * Null if client have not been approved/rejected yet, otherwise it reflects wether the client
-	 * have been approved (true) or rejected (false)
-	 */
-	public Boolean approved = null;
-	
-	/**
-	 * Is the client a simple client or not (simple = have B1 implemented and can send/handle request-tags)
-	 */
-	public boolean simple = true;
-
-	private Timer timer;
-
 	/**
 	 * Constructor for initial contact with client before validation
 	 * 
@@ -58,7 +39,6 @@ public class ClientThread extends Thread {
 		assert (socket != null) : "Socket cannot be null";
 		this.socket = socket;
 	}
-
 	/**
 	 * 
 	 * @param socket
@@ -75,6 +55,26 @@ public class ClientThread extends Thread {
 		this.approved = true;
 
 	}
+	private Socket socket;
+	private String name = "";
+	private String ID;
+	private BufferedWriter buffWriter;
+	private BufferedReader buffReader;
+	
+	private ChatPanel chatPanel;
+
+	/**
+	 * Null if client have not been approved/rejected yet, otherwise it reflects wether the client
+	 * have been approved (true) or rejected (false)
+	 */
+	public Boolean approved = null;
+
+	/**
+	 * Is the client a simple client or not (simple = have B1 implemented and can send/handle request-tags)
+	 */
+	public boolean simple = true;
+
+	private Timer timer;
 
 	/**
 	 * Try to accept request-tags, and if non are sent, then we handle
